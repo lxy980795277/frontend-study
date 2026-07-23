@@ -1,0 +1,100 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: read
+
+jobs:
+  quality:
+    name: Quality
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    services:
+      mysql:
+        image: mysql:8.4
+        env:
+          MYSQL_DATABASE: frontend_study
+          MYSQL_ROOT_PASSWORD: test-secret
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="mysqladmin ping -h 127.0.0.1 -ptest-secret"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=10
+      redis:
+        image: redis:8.8
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd="redis-cli ping"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=10
+    env:
+      API_PREFIX: api
+      APP_PORT: 3001
+      APP_VERSION: 0.0.0
+      DATABASE_HOST: 127.0.0.1
+      DATABASE_NAME: frontend_study
+      DATABASE_PASSWORD: test-secret
+      DATABASE_PORT: 3306
+      DATABASE_URL: mysql://root:test-secret@127.0.0.1:3306/frontend_study
+      DATABASE_USER: root
+      NODE_ENV: test
+      REDIS_DB: 1
+      REDIS_HOST: 127.0.0.1
+      REDIS_KEY_PREFIX: 'frontend-study:'
+      REDIS_PASSWORD: ''
+      REDIS_PORT: 6379
+      SERVER_API_BASE_URL: http://127.0.0.1:3001/api
+      WEB_ORIGIN: http://127.0.0.1:3000
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 11.16.0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          cache: pnpm
+          node-version: 24
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Generate Prisma Client
+        run: pnpm --filter @frontend-study/server prisma:generate
+
+      - name: Check formatting
+        run: pnpm format:check
+
+      - name: Lint
+        run: pnpm lint
+
+      - name: Type check
+        run: pnpm type-check
+
+      - name: Unit tests
+        run: pnpm test
+
+      - name: Build
+        run: pnpm build
+
+      - name: Check unused code
+        run: pnpm knip
+
+      - name: Install Chromium
+        run: pnpm --filter @frontend-study/web exec playwright install --with-deps chromium
+
+      - name: End-to-end tests
+        run: pnpm test:e2e

@@ -1,0 +1,17 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "composite": false,
+    "incremental": false,
+    "noEmit": false
+  },
+  "exclude": [
+    "node_modules",
+    "dist",
+    "coverage",
+    "eslint.config.mjs",
+    "vitest.config.ts",
+    "src/**/__tests__/**",
+    "src/**/*.spec.ts"
+  ]
+}

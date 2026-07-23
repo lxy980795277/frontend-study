@@ -1,0 +1,54 @@
+# lint-staged
+echo "▶ 运行 ESLint..."
+if ./node_modules/.bin/lint-staged; then
+  echo "✅ ESLint 检查通过"
+else
+  echo ""
+  echo "❌ ESLint 检查失败，提交被拒绝，请修复后重试"
+  exit 1
+fi
+
+# TypeScript
+echo "▶ 运行 TypeScript 类型检查..."
+if pnpm --filter @frontend-study/server type-check && pnpm --filter @frontend-study/web type-check; then
+  echo "✅ TypeScript 类型检查通过"
+else
+  echo ""
+  echo "❌ TypeScript 类型错误，提交被拒绝，请修复后重试"
+  exit 1
+fi
+
+# Unit tests
+echo "▶ 运行单元测试..."
+if pnpm --filter @frontend-study/server test && pnpm --filter @frontend-study/web test; then
+  echo "✅ 单元测试全部通过"
+else
+  echo ""
+  echo "❌ 单元测试失败，提交被拒绝，请修复后重试"
+  exit 1
+fi
+
+# File length
+WARN_LINES=500
+BLOCK_LINES=1000
+BLOCKED=0
+
+STAGED_FILES=$(git diff --cached --name-only --diff-filter=ACM | grep -E '\.(ts|tsx|js|jsx|css|scss)$' | grep -v -E '(\.d\.ts|dist/|\.next/|node_modules/|src/generated/)' || true)
+
+for FILE in $STAGED_FILES; do
+  [ -f "$FILE" ] || continue
+  LINES=$(wc -l < "$FILE")
+
+  if [ "$LINES" -ge "$BLOCK_LINES" ]; then
+    echo "🚫 [BLOCKED] $FILE — ${LINES} 行，超过 ${BLOCK_LINES} 行上限"
+    BLOCKED=1
+  elif [ "$LINES" -ge "$WARN_LINES" ]; then
+    echo "⚠️  [WARN] $FILE — ${LINES} 行，建议拆分"
+  fi
+done
+
+if [ "$BLOCKED" -eq 1 ]; then
+  echo ""
+  echo "提交被拒绝：请先拆分超长文件。"
+  exit 1
+fi
