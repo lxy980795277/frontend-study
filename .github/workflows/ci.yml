@@ -38,7 +38,7 @@ jobs:
           --health-retries=10
     env:
       API_PREFIX: api
-      APP_PORT: 3001
+      APP_PORT: 3101
       APP_VERSION: 0.0.0
       DATABASE_HOST: 127.0.0.1
       DATABASE_NAME: frontend_study
@@ -52,8 +52,8 @@ jobs:
       REDIS_KEY_PREFIX: 'frontend-study:'
       REDIS_PASSWORD: ''
       REDIS_PORT: 6379
-      SERVER_API_BASE_URL: http://127.0.0.1:3001/api
-      WEB_ORIGIN: http://127.0.0.1:3000
+      SERVER_API_BASE_URL: http://127.0.0.1:3101/api
+      WEB_ORIGIN: http://127.0.0.1:3100
     steps:
       - name: Checkout
         uses: actions/checkout@v4

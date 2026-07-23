@@ -12,7 +12,7 @@ const optionalNonEmptyString = z.preprocess((value: unknown) => {
 
 export const environmentSchema = z.object({
   API_PREFIX: z.string().trim().min(1).default('api'),
-  APP_PORT: z.coerce.number().int().positive().max(65_535).default(3001),
+  APP_PORT: z.coerce.number().int().positive().max(65_535).default(3101),
   APP_VERSION: z.string().trim().min(1).default('0.0.0'),
   DATABASE_HOST: z.string().trim().min(1),
   DATABASE_NAME: z.literal('frontend_study'),
@@ -32,7 +32,7 @@ export const environmentSchema = z.object({
   REDIS_PASSWORD: z.string().default(''),
   REDIS_PORT: z.coerce.number().int().positive().max(65_535),
   REDIS_USERNAME: optionalNonEmptyString,
-  WEB_ORIGIN: z.url().default('http://localhost:3000'),
+  WEB_ORIGIN: z.url().default('http://localhost:3100'),
 });
 
 export type Environment = z.infer<typeof environmentSchema>;

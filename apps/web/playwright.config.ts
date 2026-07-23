@@ -7,7 +7,7 @@ export default defineConfig({
   retries: process.env.CI ? 2 : 0,
   reporter: [['html', { open: 'never' }], ['list']],
   use: {
-    baseURL: 'http://127.0.0.1:3000',
+    baseURL: 'http://127.0.0.1:3100',
     screenshot: 'only-on-failure',
     trace: 'on-first-retry',
   },
@@ -23,6 +23,6 @@ export default defineConfig({
     command: 'pnpm --dir ../.. dev',
     reuseExistingServer: !process.env.CI,
     timeout: 120_000,
-    url: 'http://127.0.0.1:3000',
+    url: 'http://127.0.0.1:3100',
   },
 });

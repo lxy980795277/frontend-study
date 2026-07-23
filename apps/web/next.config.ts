@@ -1,7 +1,7 @@
 import type { NextConfig } from 'next';
 import { resolve } from 'node:path';
 
-const serverApiBaseUrl = process.env.SERVER_API_BASE_URL ?? 'http://localhost:3001/api';
+const serverApiBaseUrl = process.env.SERVER_API_BASE_URL ?? 'http://localhost:3101/api';
 const workspaceRoot = resolve(import.meta.dirname, '../..');
 
 const nextConfig: NextConfig = {

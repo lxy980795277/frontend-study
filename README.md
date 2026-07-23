@@ -18,9 +18,9 @@ pnpm install
 pnpm dev
 ```
 
-- Web：<http://localhost:3000>
-- API：<http://localhost:3001/api>
-- Swagger：<http://localhost:3001/api/docs>
+- Web：<http://localhost:3100>
+- API：<http://localhost:3101/api>
+- Swagger：<http://localhost:3101/api/docs>
 
 真实连接信息只允许写入 `apps/server/env/.env.dev`，不得提交到 Git。
 

@@ -6,7 +6,7 @@ import { setupServer } from 'msw/node';
 
 import { HealthPanel } from '@/components/home/health-panel';
 
-const HEALTH_ENDPOINT = 'http://localhost:3000/backend/health';
+const HEALTH_ENDPOINT = 'http://localhost:3100/backend/health';
 const HEALTHY_RESPONSE = {
   checks: {
     mysql: {

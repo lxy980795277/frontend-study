@@ -20,3 +20,9 @@ packages/shared-types 不依赖任何 App
 ```
 
 首版只有健康检查数据流，不包含业务表和具体 Lab。
+
+## 本地端口
+
+- Web：`http://localhost:3100`
+- API：`http://localhost:3101/api`
+- Web 通过 `/backend/*` 将请求代理到本地 API。
