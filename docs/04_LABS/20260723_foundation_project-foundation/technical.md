@@ -1,5 +1,8 @@
 # Project Foundation · Technical Design
 
+> 后续布局演进：Labs 已改为纯卡片入口，所有 Lab 详情页不再提供平台侧边栏。当前实现以
+> `docs/01_ARCHITECTURE/web/architecture.md` 为准；下文保留 Foundation 首次交付时的技术背景。
+
 ## 目标
 
 为后续高阶前端实验提供可独立演进的全栈运行底座。Foundation 只负责平台能力，不预置具体实验实现。

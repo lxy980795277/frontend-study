@@ -1,5 +1,9 @@
 # Project Foundation
 
+> 后续布局演进：Labs 已改为纯卡片入口，所有 Lab 详情页不再提供平台侧边栏。当前约定以
+> `docs/01_ARCHITECTURE/web/architecture.md` 和 `docs/02_DESIGN/overview.md` 为准；下文保留 Foundation
+> 首次交付时的验收背景。
+
 ## Intent
 
 建立 AI Frontend Engineering Lab 的全栈 Monorepo 基础，使后续高阶前端实验能够在统一架构、规范、测试和文档体系中独立演进。

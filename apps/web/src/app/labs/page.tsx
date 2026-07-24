@@ -1,29 +1,103 @@
+import { ArrowRight, FlaskConical } from 'lucide-react';
+import Image from 'next/image';
+import Link from 'next/link';
+
 import { Badge } from '@/components/ui/badge';
-import { EmptyLabs } from '@/components/home/empty-labs';
+import { Card, CardContent } from '@/components/ui/card';
 import { LAB_REGISTRY } from '@/config/lab-registry';
 
 export default function LabsPage() {
   return (
-    <div className="space-y-8">
-      <section className="max-w-3xl">
-        <Badge className="mb-4" variant="outline">
-          {LAB_REGISTRY.length} modules
-        </Badge>
-        <h1 className="text-3xl font-semibold tracking-[-0.03em] sm:text-4xl">Labs 工作台</h1>
-        <p className="mt-4 text-base leading-7 text-muted-foreground">
-          每个模块拥有独立路由、实现边界、异常场景、自动化测试与技术文档。通过模块导航进入具体实验。
-        </p>
-      </section>
+    <main className="min-h-dvh w-full px-5 py-10 sm:py-14 lg:px-8 lg:py-20">
+      <div className="mx-auto w-full max-w-7xl">
+        <section className="grid w-full items-center gap-6 md:grid-cols-[minmax(0,1fr)_minmax(22rem,1.35fr)_minmax(0,1fr)] lg:gap-10">
+          <Image
+            alt="开发者搭建前端工程系统的手绘插画"
+            className="mx-auto hidden h-auto w-full max-w-[21rem] md:block"
+            height={512}
+            loading="eager"
+            src="/illustrations/labs-hero-builder-transparent.png"
+            width={768}
+          />
 
-      <section aria-labelledby="lab-catalog-title">
-        <div className="mb-4">
-          <p className="text-xs font-medium tracking-[0.18em] text-muted-foreground uppercase">Module catalog</p>
-          <h2 className="mt-1 text-xl font-semibold" id="lab-catalog-title">
-            实验模块
-          </h2>
-        </div>
-        <EmptyLabs />
-      </section>
-    </div>
+          <div className="text-center">
+            <h1 className="text-4xl leading-[1.08] font-semibold tracking-[-0.045em] text-balance sm:text-5xl lg:text-[3.5rem]">
+              把前端难题，做成
+              <span className="relative mx-1 inline-block whitespace-nowrap">
+                工程能力
+                <span
+                  aria-hidden
+                  className="absolute -right-1 -bottom-2 left-1 h-1 -rotate-1 rounded-full bg-primary/70"
+                />
+              </span>
+            </h1>
+            <p className="mx-auto mt-7 max-w-2xl text-sm leading-7 text-muted-foreground sm:text-base">
+              从浏览器交互到全栈链路，把 AI 时代的前端难点做成可运行、可测试、可复用的工程实验。
+            </p>
+          </div>
+
+          <Image
+            alt="流式事件、断线恢复与数据系统的手绘插画"
+            className="mx-auto hidden h-auto w-full max-w-[21rem] md:block"
+            height={512}
+            loading="eager"
+            src="/illustrations/labs-hero-stream-system-transparent.png"
+            width={768}
+          />
+
+          <div className="grid grid-cols-2 gap-3 md:hidden">
+            <Image
+              alt=""
+              className="h-auto w-full"
+              height={512}
+              loading="eager"
+              src="/illustrations/labs-hero-builder-transparent.png"
+              width={768}
+            />
+            <Image
+              alt=""
+              className="h-auto w-full"
+              height={512}
+              loading="eager"
+              src="/illustrations/labs-hero-stream-system-transparent.png"
+              width={768}
+            />
+          </div>
+        </section>
+
+        <section aria-label="实验模块" className="mt-12 grid w-full gap-4 sm:grid-cols-2 lg:mt-16 lg:grid-cols-4">
+          {LAB_REGISTRY.map((lab) => {
+            return (
+              <Link key={lab.slug} className="group outline-none" href={lab.route}>
+                <Card className="h-full overflow-hidden border-border/80 bg-gradient-to-b from-accent/40 to-card shadow-none transition-[border-color,transform,box-shadow] duration-200 group-hover:-translate-y-0.5 group-hover:border-primary/35 group-hover:shadow-md group-focus-visible:ring-2 group-focus-visible:ring-ring">
+                  <CardContent className="flex min-h-64 flex-col p-5">
+                    <div className="flex items-start gap-3">
+                      <span className="flex size-9 shrink-0 items-center justify-center rounded-lg border bg-background text-primary shadow-sm">
+                        <FlaskConical aria-hidden className="size-4" />
+                      </span>
+                      <div className="min-w-0 flex-1">
+                        <h2 className="line-clamp-2 leading-6 font-semibold">{lab.title}</h2>
+                        <p className="mt-1 text-xs text-muted-foreground">{lab.category}</p>
+                      </div>
+                    </div>
+                    <p className="mt-5 line-clamp-3 text-sm leading-6 text-muted-foreground">{lab.description}</p>
+                    <div className="mt-auto flex items-center justify-between gap-3 pt-6">
+                      <div className="flex items-center gap-2">
+                        <Badge variant="secondary">{lab.difficulty}</Badge>
+                        <Badge variant="outline">{lab.status}</Badge>
+                      </div>
+                      <span className="inline-flex items-center gap-1.5 text-xs font-medium text-primary">
+                        进入实验
+                        <ArrowRight aria-hidden className="size-3.5 transition-transform group-hover:translate-x-0.5" />
+                      </span>
+                    </div>
+                  </CardContent>
+                </Card>
+              </Link>
+            );
+          })}
+        </section>
+      </div>
+    </main>
   );
 }

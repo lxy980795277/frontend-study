@@ -18,6 +18,17 @@
 - App Router 默认使用 Server Component。
 - Client Component 必须声明 `'use client'`。
 
+## 目录与文件命名
+
+- 普通 React 组件必须使用同名 kebab-case 目录，实现文件固定为小写 `index.tsx`。
+- 组件测试放在组件目录内的 `__tests__/`，使用 `*.spec.tsx`。
+- Next.js App Router 的 `page.tsx`、`layout.tsx`、`error.tsx`、`global-error.tsx` 和 `not-found.tsx` 保持
+  框架约定，不迁移为目录入口。
+- 前端 Service 和 Store 直接使用职责名，例如 `services/threads.ts`、`store/thread.ts`。
+- 禁止在前端使用 NestJS 风格的 `*.service.ts` 和 `*.store.ts`。
+- 禁止为规避目录迁移保留兼容文件或重复导出；导入方直接引用组件目录。
+- 所有结构调整必须通过 `pnpm check:structure`。
+
 ## 条件渲染
 
 - JSX 禁止三目表达式。

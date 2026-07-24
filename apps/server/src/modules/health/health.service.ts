@@ -54,8 +54,8 @@ export class HealthService {
         status: 'up',
       };
     } catch (error: unknown) {
-      const message = error instanceof Error ? error.message : 'Unknown dependency error';
-      this.logger.error(`${name} health check failed: ${message}`);
+      const cause = error instanceof Error ? error.name : typeof error;
+      this.logger.error(`${name} health check failed: cause=${cause}`);
       return {
         latencyMs: Math.max(0, Math.round(performance.now() - startedAt)),
         status: 'down',

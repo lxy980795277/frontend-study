@@ -1,6 +1,6 @@
 {
   "name": "frontend-study",
-  "version": "0.1.1",
+  "version": "0.2.0",
   "private": true,
   "description": "AI Frontend Engineering Lab",
   "author": "liuxinyu",
@@ -24,7 +24,8 @@
     "test:e2e": "pnpm --filter @frontend-study/web test:e2e",
     "knip": "knip",
     "clean": "turbo clean",
-    "check": "pnpm format:check && pnpm lint && pnpm type-check && pnpm test && pnpm build && pnpm knip",
+    "check:structure": "pnpm --filter @frontend-study/web check:structure",
+    "check": "pnpm check:structure && pnpm format:check && pnpm lint && pnpm type-check && pnpm test && pnpm build && pnpm knip",
     "lint-staged": "lint-staged",
     "prepare": "husky"
   },

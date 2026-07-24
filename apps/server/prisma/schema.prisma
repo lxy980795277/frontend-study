@@ -6,3 +6,81 @@ generator client {
 datasource db {
   provider = "mysql"
 }
+
+/// Agent 对话线程。
+model Thread {
+  /// UUIDv7 线程标识。
+  id        String   @id @db.Char(36)
+  /// 线程标题。
+  title     String?  @db.VarChar(120)
+  /// UTC 创建时间。
+  createdAt DateTime @default(now()) @map("created_at") @db.DateTime(3)
+  /// UTC 更新时间。
+  updatedAt DateTime @default(now()) @updatedAt @map("updated_at") @db.DateTime(3)
+
+  messages Message[]
+  runs     AgentRun[]
+
+  @@index([updatedAt, id], map: "idx_threads_updated_at_id")
+  @@map("t_threads")
+}
+
+/// 一次 AG-UI Agent Run。
+model AgentRun {
+  /// AG-UI runId，使用 UUIDv7。
+  id            String    @id @db.Char(36)
+  /// 所属线程。
+  threadId      String    @map("thread_id") @db.Char(36)
+  /// 规范化 RunAgentInput 的 SHA-256。
+  inputHash     String    @map("input_hash") @db.Char(64)
+  /// 完整 RunAgentInput 快照。
+  inputSnapshot Json      @map("input_snapshot")
+  /// PENDING/RUNNING/CANCELLING/SUCCEEDED/FAILED/ABORTED。
+  status        String    @db.VarChar(24)
+  /// 稳定错误码。
+  errorCode     String?   @map("error_code") @db.VarChar(64)
+  /// 脱敏错误信息。
+  errorMessage  String?   @map("error_message") @db.VarChar(512)
+  /// Producer 启动时间。
+  startedAt     DateTime? @map("started_at") @db.DateTime(3)
+  /// Run 终态时间。
+  finishedAt    DateTime? @map("finished_at") @db.DateTime(3)
+  /// UTC 创建时间。
+  createdAt     DateTime  @default(now()) @map("created_at") @db.DateTime(3)
+  /// UTC 更新时间。
+  updatedAt     DateTime  @default(now()) @updatedAt @map("updated_at") @db.DateTime(3)
+
+  messages Message[]
+  thread   Thread    @relation(fields: [threadId], references: [id], onDelete: Cascade)
+
+  @@index([threadId, status, createdAt], map: "idx_agent_runs_thread_status_created")
+  @@index([status, updatedAt], map: "idx_agent_runs_status_updated")
+  @@map("t_agent_runs")
+}
+
+/// 持久化后的紧凑 AG-UI Message。
+model Message {
+  /// AG-UI messageId，使用 UUIDv7。
+  id        String   @id @db.Char(36)
+  /// 所属线程。
+  threadId  String   @map("thread_id") @db.Char(36)
+  /// 产生或触发消息的 Run。
+  runId     String   @map("run_id") @db.Char(36)
+  /// AG-UI Message Role。
+  role      String   @db.VarChar(20)
+  /// 完整 AG-UI Message JSON。
+  payload   Json
+  /// COMPLETED/INTERRUPTED。
+  status    String   @db.VarChar(24)
+  /// UTC 创建时间。
+  createdAt DateTime @default(now()) @map("created_at") @db.DateTime(3)
+  /// UTC 更新时间。
+  updatedAt DateTime @default(now()) @updatedAt @map("updated_at") @db.DateTime(3)
+
+  run    AgentRun @relation(fields: [runId], references: [id], onDelete: Cascade)
+  thread Thread   @relation(fields: [threadId], references: [id], onDelete: Cascade)
+
+  @@index([threadId, createdAt, id], map: "idx_messages_thread_created_id")
+  @@index([runId, createdAt], map: "idx_messages_run_created")
+  @@map("t_messages")
+}

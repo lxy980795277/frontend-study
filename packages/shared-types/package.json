@@ -27,5 +27,8 @@
     "eslint": "^9.39.5",
     "typescript": "~6.0.3",
     "vitest": "^4.1.10"
+  },
+  "dependencies": {
+    "@ag-ui/core": "0.0.57"
   }
 }

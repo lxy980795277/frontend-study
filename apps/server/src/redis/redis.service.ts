@@ -4,11 +4,11 @@ import { createClient, type RedisClientType } from 'redis';
 import { EnvironmentService } from '../config/environment.service.js';
 
 const MAX_RECONNECT_ATTEMPTS = 3;
-type RedisClient = RedisClientType<Record<string, never>, Record<string, never>, Record<string, never>, 2>;
+export type AppRedisClient = RedisClientType<Record<string, never>, Record<string, never>, Record<string, never>, 2>;
 
 @Injectable()
 export class RedisService implements OnModuleDestroy, OnModuleInit {
-  private readonly client: RedisClient;
+  private readonly client: AppRedisClient;
   private readonly keyPrefix: string;
   private readonly logger = new Logger(RedisService.name);
 
@@ -37,13 +37,31 @@ export class RedisService implements OnModuleDestroy, OnModuleInit {
     });
 
     this.client.on('error', (error: Error) => {
-      this.logger.error(`Redis client error: ${error.message}`);
+      this.logger.error(`Redis client error: cause=${error.name}`);
     });
   }
 
   buildScanPattern(pattern: string): string {
     const normalizedSuffix = pattern.replace(/^:+/, '');
     return `${this.keyPrefix}${normalizedSuffix}`;
+  }
+
+  buildKey(key: string): string {
+    const normalizedSuffix = key.replace(/^:+/, '');
+    return `${this.keyPrefix}${normalizedSuffix}`;
+  }
+
+  async createIsolatedClient(): Promise<AppRedisClient> {
+    const client = this.client.duplicate();
+    client.on('error', (error: Error) => {
+      this.logger.error(`Redis isolated client error: cause=${error.name}`);
+    });
+    await client.connect();
+    return client;
+  }
+
+  execute<T>(operation: (client: AppRedisClient) => Promise<T>): Promise<T> {
+    return operation(this.client);
   }
 
   async onModuleDestroy(): Promise<void> {

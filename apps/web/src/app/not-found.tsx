@@ -12,7 +12,7 @@ export default function NotFoundPage() {
           <h1 className="mt-2 text-xl font-semibold">页面不存在</h1>
           <p className="mt-2 text-sm text-muted-foreground">这个 Lab 可能尚未创建，或路由已经调整。</p>
           <Button asChild className="mt-6">
-            <Link href="/">返回 Home</Link>
+            <Link href="/home">返回 Home</Link>
           </Button>
         </CardContent>
       </Card>

@@ -19,10 +19,18 @@ export default defineConfig({
       },
     },
   ],
-  webServer: {
-    command: 'pnpm --dir ../.. dev',
-    reuseExistingServer: !process.env.CI,
-    timeout: 120_000,
-    url: 'http://127.0.0.1:3100',
-  },
+  webServer: [
+    {
+      command: 'pnpm --dir ../server dev',
+      reuseExistingServer: !process.env.CI,
+      timeout: 120_000,
+      url: 'http://127.0.0.1:3101/api/health',
+    },
+    {
+      command: 'pnpm dev',
+      reuseExistingServer: !process.env.CI,
+      timeout: 120_000,
+      url: 'http://127.0.0.1:3100',
+    },
+  ],
 });

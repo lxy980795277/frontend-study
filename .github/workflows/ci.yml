@@ -75,6 +75,12 @@ jobs:
       - name: Generate Prisma Client
         run: pnpm --filter @frontend-study/server prisma:generate
 
+      - name: Apply database migrations
+        run: pnpm --filter @frontend-study/server prisma:migrate:deploy
+
+      - name: Check web structure
+        run: pnpm check:structure
+
       - name: Check formatting
         run: pnpm format:check
 

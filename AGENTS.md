@@ -70,6 +70,8 @@ Step 7 多人协作 ◄── Step 6 提交 ◄── Step 5 验证 ──* 体�
 - 详细规范以 `docs/05_CONSTRAINTS/frontend.md` 和 `docs/02_DESIGN/` 为准。
 - 禁止使用 `any`；函数参数和返回值必须明确。
 - React 组件使用函数组件与 `FC<Props>`，普通组件使用命名导出。
+- 普通组件必须放在同名 kebab-case 目录的 `index.tsx`；App Router 特殊文件和 `*.spec.tsx` 除外。
+- 前端 Service 和 Store 使用职责名，不使用后端式 `*.service.ts` 或 `*.store.ts`。
 - 箭头函数不得省略函数体和 `return`。
 - App Router 默认使用 Server Component，Client Component 必须声明 `'use client'`。
 - Zustand 必须使用 Selector，禁止组件中无参读取完整 Store。
@@ -108,6 +110,7 @@ Step 7 多人协作 ◄── Step 6 提交 ◄── Step 5 验证 ──* 体�
 - 前端复杂算法、Store、Hook 和工具函数必须写单测。
 - 页面主流程和用户体验通过 Playwright 验证。
 - 修复 Bug 时先写失败测试，再实现修复。
+- 前端结构变更必须通过 `pnpm check:structure`。
 
 ## 提交
 

@@ -19,7 +19,22 @@ apps/server ────┘
 packages/shared-types 不依赖任何 App
 ```
 
-首版只有健康检查数据流，不包含业务表和具体 Lab。
+当前包含 Foundation 健康检查和首个独立实验 `agent-stream-recovery`。实验使用 MySQL 保存
+Thread/Run/Message 的持久状态，使用 Redis Stream 保存活跃 Run 的短期可回放事件。
+
+## Agent Stream Recovery 数据流
+
+```text
+Browser
+  ├── GET /threads/:threadId ─────────────► MySQL 历史与 activeRun
+  └── POST /stream + Last-Event-ID ───────► SSE Consumer
+                                               │
+Simulated Agent Producer ─► Redis Stream ◄─────┘
+          │
+          └───────────────────────────────────► MySQL Run/Message 终态
+```
+
+Agent 推理是可替换的模拟实现，其余 HTTP、SSE、AG-UI、数据库、Redis Stream 和恢复状态均为真实链路。
 
 ## 本地端口
 
