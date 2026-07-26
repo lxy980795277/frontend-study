@@ -79,3 +79,172 @@ body {
 ::selection {
   background: color-mix(in oklch, var(--primary) 22%, transparent);
 }
+
+.msr-markdown {
+  min-width: 0;
+  color: var(--foreground);
+  font-size: 0.75rem;
+  line-height: 1.75;
+  overflow-wrap: anywhere;
+}
+
+.msr-markdown > :first-child,
+.msr-markdown .msr-content > :first-child,
+.msr-markdown .msr-fallback-content > :first-child {
+  margin-top: 0;
+}
+
+.msr-markdown > :last-child,
+.msr-markdown .msr-content > :last-child,
+.msr-markdown .msr-fallback-content > :last-child {
+  margin-bottom: 0;
+}
+
+.msr-markdown h1,
+.msr-markdown h2,
+.msr-markdown h3,
+.msr-markdown h4 {
+  margin: 1.25rem 0 0.5rem;
+  scroll-margin-top: 1rem;
+  font-weight: 650;
+  line-height: 1.35;
+  letter-spacing: -0.015em;
+}
+
+.msr-markdown h1 {
+  font-size: 1.125rem;
+}
+
+.msr-markdown h2 {
+  border-bottom: 1px solid var(--border);
+  padding-bottom: 0.35rem;
+  font-size: 0.9375rem;
+}
+
+.msr-markdown h3,
+.msr-markdown h4 {
+  font-size: 0.8125rem;
+}
+
+.msr-markdown p,
+.msr-markdown ul,
+.msr-markdown ol,
+.msr-markdown blockquote,
+.msr-markdown pre,
+.msr-markdown table {
+  margin: 0.65rem 0;
+}
+
+.msr-markdown ul,
+.msr-markdown ol {
+  padding-left: 1.25rem;
+}
+
+.msr-markdown ul {
+  list-style: disc;
+}
+
+.msr-markdown ol {
+  list-style: decimal;
+}
+
+.msr-markdown li + li {
+  margin-top: 0.2rem;
+}
+
+.msr-markdown a {
+  color: var(--primary);
+  text-decoration: underline;
+  text-underline-offset: 0.2em;
+}
+
+.msr-markdown blockquote {
+  border-left: 3px solid var(--border);
+  padding: 0.25rem 0 0.25rem 0.875rem;
+  color: var(--muted-foreground);
+}
+
+.msr-markdown :not(pre) > code {
+  border: 1px solid var(--border);
+  border-radius: 0.25rem;
+  background: var(--muted);
+  padding: 0.08rem 0.3rem;
+  font-family: var(--font-geist-mono), monospace;
+  font-size: 0.6875rem;
+}
+
+.msr-markdown pre {
+  max-height: 22rem;
+  max-width: 100%;
+  overflow: auto;
+  border: 1px solid var(--border);
+  border-radius: 0.5rem;
+  background: color-mix(in oklch, var(--muted) 72%, var(--background));
+  padding: 0.875rem;
+  font-family: var(--font-geist-mono), monospace;
+  font-size: 0.6875rem;
+  line-height: 1.65;
+}
+
+.msr-markdown pre code {
+  font-family: inherit;
+}
+
+.msr-markdown table {
+  display: block;
+  width: max-content;
+  max-width: 100%;
+  overflow-x: auto;
+  border-collapse: collapse;
+}
+
+.msr-markdown th,
+.msr-markdown td {
+  border: 1px solid var(--border);
+  padding: 0.35rem 0.55rem;
+  text-align: left;
+  white-space: nowrap;
+}
+
+.msr-markdown th {
+  background: var(--muted);
+  font-weight: 600;
+}
+
+.msr-block {
+  position: relative;
+  min-width: 0;
+}
+
+.msr-block + .msr-block {
+  margin-top: 0.65rem;
+}
+
+.msr-content,
+.msr-fallback-content {
+  min-width: 0;
+}
+
+.msr-tools {
+  position: absolute;
+  top: 0.45rem;
+  right: 0.45rem;
+  z-index: 2;
+  opacity: 0;
+  transition: opacity 150ms ease;
+}
+
+.msr-block:hover > .msr-tools,
+.msr-block:focus-within > .msr-tools {
+  opacity: 1;
+}
+
+.msr-block[data-collapsed='true'] .msr-content pre {
+  display: none;
+}
+
+@media (hover: none) {
+  .msr-tools {
+    opacity: 1;
+  }
+}

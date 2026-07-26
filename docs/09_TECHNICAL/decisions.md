@@ -51,3 +51,22 @@ EOF 由 Transport 异常与业务状态机驱动自动退避恢复；“模拟�
 普通 React 组件使用 `<component-name>/index.tsx`，测试与组件共置；App Router 特殊文件和测试后缀除外。前端 Service
 与 Store 使用无层级后缀的职责名，NestJS 三段式文件名只保留在后端。该规则由 `pnpm check:structure` 在本地自检和
 CI 中共同执行，避免目录结构依赖人工 Review。
+
+## ADR-011 · Markdown 流式渲染采用 Worker Block Diff 与可确认 Revision
+
+Legacy 与 Incremental 共享同一组确定性累积文本帧。Legacy 在主线程执行 `markdown-it → DOMPurify → innerHTML`；
+Incremental 在共享 Worker 中执行解析、顶层块分组和 Diff，主线程只应用 `replaceRange`、`tailAppendText` 或
+`tailAppendFallbackHtml`。
+
+Worker 为每个 Renderer 保存 Confirmed 与 Pending 两套基线，只有主线程成功应用 Patch 并发送 Commit 后才推进
+Confirmed Revision。重复 Revision No-op，过期基线和目标块不匹配触发安全恢复，避免重放造成重复文本。
+
+正文和 React Tools 使用独立 Host。文本快速路径只允许写入明确的块级根节点或 `pre > code`，并与 Patch 携带的完整
+Snapshot 做结果校验；无法证明一致时立即替换完整块，不通过“最深末尾元素”猜测追加位置。
+
+Worker Error、Message Error、请求超时和 Apply 冲突统一降级为经 DOMPurify 清理的主线程全量渲染。该实现先保留在独立
+Lab，不替换公共 Markdown 组件，也不在出现真实复用前提取 Package。
+
+性能测试使用一份公共静态 Markdown 源，在浏览器中固定复制 10 份形成约 47 万字符的历史基线。基线渲染通过
+`committedContentLength` 明确确认，不使用延时猜测；确认后重置 Collector，只测量尾部确定性续写。这样对比的是
+“超大历史上下文上继续生成”的主线程成本，同时避免在仓库中维护十份重复 Fixture。

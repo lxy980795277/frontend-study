@@ -18,4 +18,13 @@ export const LAB_REGISTRY: readonly LabDefinition[] = [
     status: 'ready',
     title: 'Agent 流式断线恢复',
   },
+  {
+    category: 'Rendering Performance',
+    description: '基于 Web Worker、块级 Diff 与最小 DOM Patch 验证高频 Markdown 增量渲染。',
+    difficulty: 'expert',
+    route: '/labs/markdown-stream-rendering',
+    slug: 'markdown-stream-rendering',
+    status: 'ready',
+    title: 'Markdown 流式增量渲染',
+  },
 ];

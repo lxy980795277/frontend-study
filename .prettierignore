@@ -9,6 +9,7 @@ pnpm-lock.yaml
 packages/eslint-config/*.mjs
 **/eslint.config.mjs
 apps/server/src/generated/
+apps/web/public/fixtures/markdown-stream-rendering/llm-benchmark.md
 **/next-env.d.ts
 apps/**/env/.env.*
 !apps/**/env/.env.example

@@ -20,6 +20,14 @@
   28px，模块页面不重复声明外层 Padding。
 - Agent 对话区统一使用 12px 字号；不显示用户与 Agent 角色标签，Agent 消息不使用外边框，用户消息使用 4px
   圆角紧凑气泡。
+- Markdown 流式增量渲染 Lab 保留 Legacy / Incremental 等宽双栏：桌面端固定在可用视口内，Renderer、指标与
+  Patch 日志分别局部滚动；移动端改为上下排列并允许页面纵向滚动。
+- Markdown 流式增量渲染控制台下方使用紧凑状态条展示基准 Loading、Error、Preparing、Ready 与运行阶段；未完成
+  基线确认时禁用播放，加载失败时在原位提供重试。
+- 流式 Renderer 默认自动跟随最新内容；用户主动向上阅读时不得抢夺滚动位置，重新滚到底部后自动恢复跟随。多个
+  Renderer 实例必须分别维护该交互状态。
+- 所有高密度 Lab 的 Grid/Flex 子项必须设置 `min-w-0` 和 `min-h-0`；长单词允许换行，代码块和表格只在自身
+  Content Host 内滚动，禁止撑宽页面；超长代码块统一限制为 22rem 高度并保留横向、纵向滚动。
 - Home 与 Labs 通过明确入口互相跳转，不共享业务 Layout。
 - Loading、Error、Empty 必须作为一等状态设计。
 
