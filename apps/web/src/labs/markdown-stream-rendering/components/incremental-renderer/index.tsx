@@ -1,8 +1,9 @@
 'use client';
 
 import type { FC } from 'react';
-import { useEffect, useRef } from 'react';
+import { useCallback, useEffect, useRef } from 'react';
 
+import type { RendererCommit } from '../../benchmark/types';
 import { IncrementalMarkdownRenderer } from '../../browser/incremental-renderer';
 import type { PatchResult } from '../../core/patch/types';
 import type { IncrementalSample, RuntimeStatus } from '../../metrics/types';
@@ -13,6 +14,7 @@ interface IncrementalRendererProps {
   content: string;
   failureSignal: number;
   onCoalescedFrame: () => void;
+  onCommit?: (commit: RendererCommit) => void;
   onFallback: () => void;
   onPatch: (result: PatchResult) => void;
   onSample: (sample: IncrementalSample) => void;
@@ -24,6 +26,7 @@ export const IncrementalRenderer: FC<IncrementalRendererProps> = ({
   content,
   failureSignal,
   onCoalescedFrame,
+  onCommit,
   onFallback,
   onPatch,
   onSample,
@@ -33,6 +36,15 @@ export const IncrementalRenderer: FC<IncrementalRendererProps> = ({
   const containerRef = useRef<HTMLDivElement>(null);
   const rendererRef = useRef<IncrementalMarkdownRenderer | null>(null);
   const handledFailureSignal = useRef(failureSignal);
+  const handleCommit = useCallback(
+    (contentLength: number) => {
+      onCommit?.({
+        committedAt: performance.now(),
+        contentLength,
+      });
+    },
+    [onCommit],
+  );
 
   useEffect(() => {
     const container = containerRef.current;
@@ -43,6 +55,7 @@ export const IncrementalRenderer: FC<IncrementalRendererProps> = ({
     const renderer = new IncrementalMarkdownRenderer({
       container,
       onCoalescedFrame,
+      onCommit: handleCommit,
       onFallback,
       onMetrics: onSample,
       onPatch,
@@ -57,7 +70,7 @@ export const IncrementalRenderer: FC<IncrementalRendererProps> = ({
       renderer.destroy();
       rendererRef.current = null;
     };
-  }, [onCoalescedFrame, onFallback, onPatch, onSample, onStatus, onWorkerRequest]);
+  }, [handleCommit, onCoalescedFrame, onFallback, onPatch, onSample, onStatus, onWorkerRequest]);
 
   useEffect(() => {
     if (content.length > 0) {

@@ -11,6 +11,7 @@ let rendererSequence = 0;
 export interface IncrementalRendererOptions {
   container: HTMLElement;
   onCoalescedFrame: () => void;
+  onCommit: (contentLength: number) => void;
   onFallback: () => void;
   onMetrics: (sample: IncrementalSample) => void;
   onPatch: (result: PatchResult) => void;
@@ -210,6 +211,7 @@ export class IncrementalMarkdownRenderer {
         patchOps: result.patches.map((patch) => patch.op),
         usedSnapshotFallback: applied.usedSnapshotFallback,
       });
+      this.options.onCommit(this.requestedContent.length);
 
       const nextTarget = this.pendingTarget;
       this.pendingTarget = null;
@@ -260,6 +262,7 @@ export class IncrementalMarkdownRenderer {
     removed.forEach((block) => {
       this.tools.unmount(block);
     });
+    this.options.onCommit(content.length);
   }
 
   private emitStatus(phase: RuntimeStatus['phase'], committedContentLength?: number): void {

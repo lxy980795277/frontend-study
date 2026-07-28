@@ -12,6 +12,7 @@ import {
   type StreamFrame,
 } from '../fixtures/streamer';
 import { MarkdownMetricsCollector } from '../metrics/collector';
+import { createEmptyMetricsSnapshot } from '../metrics/empty';
 import type { IncrementalSample, LegacySample, RunMetricsSnapshot, RuntimeStatus } from '../metrics/types';
 import { useBenchmarkBaseline, type BenchmarkLoadStatus } from './use-benchmark-baseline';
 
@@ -20,32 +21,6 @@ const DEFAULT_CONFIGURATION: StreamConfiguration = {
   fps: 20,
   mode: 'char',
   seed: 5_005,
-};
-
-const EMPTY_METRICS: RunMetricsSnapshot = {
-  elapsedMs: 0,
-  incremental: {
-    applyMs: 0,
-    coalescedFrames: 0,
-    commits: 0,
-    fallbackPatchRate: 0,
-    mainAverageMs: 0,
-    mainMaxMs: 0,
-    mainTotalMs: 0,
-    mountMs: 0,
-    runtimeFallbacks: 0,
-    tailAppendRate: 0,
-    workerDiffMs: 0,
-    workerParseMs: 0,
-    workerRequests: 0,
-  },
-  inputFrames: 0,
-  legacy: {
-    commits: 0,
-    mainAverageMs: 0,
-    mainMaxMs: 0,
-    mainTotalMs: 0,
-  },
 };
 
 const MAX_PATCH_LOG_ENTRIES = 160;
@@ -118,7 +93,7 @@ export function useMarkdownStreamLab(): MarkdownStreamLabController {
   const [phase, setPhase] = useState<BenchmarkPhase>('loading');
   const [runId, setRunId] = useState(0);
   const [failureSignal, setFailureSignal] = useState(0);
-  const [metrics, setMetrics] = useState(EMPTY_METRICS);
+  const [metrics, setMetrics] = useState(createEmptyMetricsSnapshot);
   const [patchLog, setPatchLog] = useState<PatchLogEntry[]>([]);
   const [runtimeStatuses, setRuntimeStatuses] = useState<Readonly<Record<number, RuntimeStatus>>>({});
 
@@ -139,7 +114,7 @@ export function useMarkdownStreamLab(): MarkdownStreamLabController {
   const clearMeasurements = useCallback(() => {
     collector.current.reset();
     patchSequence.current = 0;
-    setMetrics(EMPTY_METRICS);
+    setMetrics(createEmptyMetricsSnapshot());
     setPatchLog([]);
   }, []);
 

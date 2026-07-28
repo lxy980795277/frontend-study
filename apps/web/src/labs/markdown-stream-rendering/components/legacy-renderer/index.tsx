@@ -3,16 +3,18 @@
 import type { FC } from 'react';
 import { useLayoutEffect, useRef } from 'react';
 
-import { renderMarkdown } from '../../worker/markdown-parser';
-import { sanitizeMarkdownHtml } from '../../security/sanitize';
+import type { RendererCommit } from '../../benchmark/types';
 import type { LegacySample } from '../../metrics/types';
+import { sanitizeMarkdownHtml } from '../../security/sanitize';
+import { renderMarkdown } from '../../worker/markdown-parser';
 
 interface LegacyRendererProps {
   content: string;
+  onCommit?: (commit: RendererCommit) => void;
   onSample: (sample: LegacySample) => void;
 }
 
-export const LegacyRenderer: FC<LegacyRendererProps> = ({ content, onSample }) => {
+export const LegacyRenderer: FC<LegacyRendererProps> = ({ content, onCommit, onSample }) => {
   const containerRef = useRef<HTMLDivElement>(null);
 
   useLayoutEffect(() => {
@@ -27,7 +29,11 @@ export const LegacyRenderer: FC<LegacyRendererProps> = ({ content, onSample }) =
     onSample({
       mainMs: performance.now() - startedAt,
     });
-  }, [content, onSample]);
+    onCommit?.({
+      committedAt: performance.now(),
+      contentLength: content.length,
+    });
+  }, [content, onCommit, onSample]);
 
   return <div ref={containerRef} className="msr-markdown size-full" data-testid="legacy-renderer" />;
 };

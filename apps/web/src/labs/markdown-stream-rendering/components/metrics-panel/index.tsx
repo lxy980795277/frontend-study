@@ -52,7 +52,7 @@ export const MetricsPanel: FC<MetricsPanelProps> = ({ metrics }) => {
     <div className="space-y-4 text-xs" data-testid="metrics-panel">
       <div className="flex items-center justify-between gap-3 rounded-lg border bg-muted/30 p-3">
         <div>
-          <p className="text-[0.625rem] tracking-wide text-muted-foreground uppercase">Main-thread gain</p>
+          <p className="text-[0.625rem] tracking-wide text-muted-foreground uppercase">Coexistence main-thread gain</p>
           <p className="mt-1 font-mono text-xl font-semibold">{formatPercentage(gain)}</p>
         </div>
         <Badge variant="secondary">{metrics.inputFrames} frames</Badge>

@@ -384,10 +384,12 @@ Incremental：
 
 UI 不把 Worker 耗时和主线程耗时直接相加为“总耗时”。收益倍数只比较相同口径的主线程累计/均值/峰值。
 
-当前版本的 Legacy 与 Incremental 同时挂载、同时消费 Stream Frame，因此这里的指标描述的是“双栏共存负载”：
+同步对比模式的 Legacy 与 Incremental 同时挂载、同时消费 Stream Frame，因此这里的指标描述的是“双栏共存负载”：
 Legacy 主线程任务会延迟 Incremental 的消息派发和 DOM Patch，Incremental 提交也会与 Legacy 竞争主线程、布局、
-绘制和 GC。函数内 `performance.now()` 采样仍是真实执行区间，但不能解释为任一方案独立运行时的端到端性能。
-严格的独立性能结论需要后续增加串行隔离 Benchmark；当前双栏保留用于内容一致性、Patch 行为和共存压力观察。
+绘制和 GC。函数内 `performance.now()` 采样仍是真实执行区间，但不能解释为任一方案独立运行时的端到端性能。页面新增
+`mode=benchmark` 串行隔离基准；完整设计和指标口径见
+`docs/04_LABS/20260727_perf_markdown-isolated-benchmark/technical.md`。双栏继续用于内容一致性、Patch 行为、降级和
+共存压力观察。
 
 ## 10. Layout
 
@@ -567,4 +569,4 @@ Inspector：
 - [x] 实现代码块最大高度和双向内部滚动。
 - [x] 补充 Baseline Unit、Service、Hook 与 Playwright 验证。
 - [x] 完成当前双栏版本体验验证并记录 Verify。
-- [ ] 增加 Legacy / Incremental 串行隔离 Benchmark，避免两条渲染链路互相污染独立性能结果。
+- [x] 增加 Legacy / Incremental 串行隔离 Benchmark，避免两条渲染链路互相污染独立性能结果。

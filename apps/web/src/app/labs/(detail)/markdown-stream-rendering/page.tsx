@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import { Suspense } from 'react';
 
 import { MarkdownStreamRenderingLab } from '@/labs/markdown-stream-rendering/components/markdown-stream-rendering-lab';
 
@@ -10,7 +11,9 @@ export const metadata: Metadata = {
 export default function MarkdownStreamRenderingPage() {
   return (
     <main className="min-h-[calc(100dvh-3.5rem)] xl:h-dvh xl:min-h-0">
-      <MarkdownStreamRenderingLab />
+      <Suspense fallback={<div className="h-[32rem] animate-pulse rounded-xl bg-muted/30" />}>
+        <MarkdownStreamRenderingLab />
+      </Suspense>
     </main>
   );
 }

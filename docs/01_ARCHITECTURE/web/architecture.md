@@ -59,7 +59,8 @@ labs/agent-stream-recovery/
 
 ```text
 labs/markdown-stream-rendering/
-├── components/   控制台、双栏 Renderer、指标、Patch 日志和局部 React Tools
+├── benchmark/    隔离执行计划、串行 Runner、统计、内容摘要与报告模型
+├── components/   模式入口、双栏/单 Renderer 工作区、指标、报告和局部 React Tools
 ├── core/         无 DOM/React 依赖的 Block Diff、稳定身份与 Patch 协议
 ├── worker/       Markdown 解析、分块、Confirmed/Pending Revision 基线
 ├── browser/      Worker 单例、Single-flight、RAF Commit、DOM Apply 与安全降级
@@ -81,6 +82,10 @@ labs/markdown-stream-rendering/
 - 页面从 `public/fixtures/markdown-stream-rendering/llm-benchmark.md` 加载单一真实长文档，在浏览器内确定性复制 10
   份。两栏确认相同基线后才清空指标并开始尾部流式续写，基线装载成本不计入续写对比。
 - 超长代码块拥有统一最大高度和独立双向滚动，不把 Renderer Viewport 或页面整体撑出布局。
+- 页面以 URL Query 区分 `mode=compare` 与 `mode=benchmark`：同步对比同时挂载两种 Renderer，用于功能、
+  Patch、降级和共存压力验证；隔离基准不执行预热，按奇偶轮交替、串行挂载单个 Renderer，用于独立性能测量。
+- 隔离基准以最终 DOM Commit 而不是 Streamer 发送结束作为完成点；执行间卸载 Renderer，并等待两帧和浏览器空闲
+  后再继续。报告保留主线程成本、Commit 延迟 P50/P95、Wall Time、Long Task、调度计数、逐轮结果和可见内容摘要。
 - 该能力当前保持为独立 Lab，不替换公共 `MarkdownRenderer`；稳定并出现真实复用后再评估提取 Package。
 
 ## 路由与布局

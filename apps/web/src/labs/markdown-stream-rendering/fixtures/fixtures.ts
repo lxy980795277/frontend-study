@@ -64,7 +64,7 @@ const UNSAFE = `# 不可信内容
 
 <script>window.__unsafe_markdown_executed__ = true</script>
 
-<img src="invalid" onerror="window.__unsafe_markdown_executed__ = true">
+<img src="data:image/gif;base64,R0lGODlhAQABAAAAACw=" onerror="window.__unsafe_markdown_executed__ = true">
 
 <a href="javascript:alert('xss')">危险链接</a>
 
