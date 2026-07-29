@@ -42,7 +42,7 @@ MarkdownStreamRenderingLab
     │   ├── FPS
     │   ├── SplitMode
     │   ├── InstanceCount = 1
-    │   └── RoundCount
+    │   └── RoundCount = 1 / 2 / 3 / 5 / 10
     ├── BenchmarkActions
     ├── BenchmarkWorkspace (fixed size)
     │   ├── Progress
@@ -339,7 +339,17 @@ interface BenchmarkReport {
 - 运行中停止，页面可重新配置并重新开始。
 - 控制台无 Error、React Warning 或未处理 Promise。
 
-## 14. Alternatives
+## 14. Production Reference Benchmark
+
+模块收尾时使用 Production Build、综合重型场景、472,763 字符基线、60 FPS 字符切分和 10 轮交替执行建立参考结果。
+该任务不执行预热，Legacy 与 Incremental 各获得 10 个正式样本，20 次执行的最终可见文本摘要一致。
+
+完整环境、协议、聚合结果、逐轮配对分布、执行顺序偏差、Long Task 边界和原始 JSON 见
+[`benchmark-report.md`](./benchmark-report.md)。
+
+参考结果只用于说明当前设备和输入下的实现差异，不建立跨设备固定阈值，也不进入 CI 性能门禁。
+
+## 15. Alternatives
 
 ### 继续双栏并单独计时
 
@@ -357,7 +367,7 @@ interface BenchmarkReport {
 
 自动化报告的隔离更强，适合后续标准基准；但不适合作为用户在 Lab 页面中即时理解和操作的唯一交互。
 
-## 15. Transferable Conclusion
+## 16. Transferable Conclusion
 
 性能对比必须把“功能并排展示”和“独立基准测量”拆成两个实验协议。前者追求同帧可观察性，后者追求生命周期、输入、顺序和
 指标口径的公平性。对流式 UI 而言，完成时刻应由最终 DOM Commit 决定，而不是由网络或 Streamer 的最后一帧决定。

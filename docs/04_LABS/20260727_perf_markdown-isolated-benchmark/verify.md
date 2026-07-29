@@ -36,7 +36,7 @@ git diff --check
 
 测试结果：
 
-- Web：18 个测试文件，49 条测试通过。
+- Web：18 个测试文件，50 条测试通过。
 - Server：10 个测试文件，22 条测试通过。
 - Playwright：原有 13 条 Chromium 场景通过。
 - Next.js 与 NestJS Production Build 通过。
@@ -64,11 +64,38 @@ URL: /labs/markdown-stream-rendering?mode=benchmark
 - 完整报告、逐轮指标和 JSON 导出入口正常显示。
 - 浏览器控制台 0 Error、0 Warning。
 
-## 5. User Experience Confirmation
+## 5. Production Benchmark Closeout
 
-用户在了解预热用途后明确要求移除预热，并确认提交当前改动。提交请求视为本次体验验证通过。
+使用独立临时 Worktree 和 3190 端口完成 Production Build 参考基准，不影响 3100 Dev Server：
 
-## 6. Conclusion
+```text
+场景: 综合重型
+基线: 472,763 字符
+速度: 60 FPS
+切分: 字符 12～32
+轮次: 10
+预热: 无
+正式执行: 20
+```
+
+结果：
+
+- 20 / 20 次执行完成，Legacy 与 Incremental 各 10 个样本。
+- 逐轮顺序严格按照奇偶轮交替。
+- 主线程累计耗时降低 96.41%，端到端平均完成时间降低 58.51%。
+- Commit P50 降低 31.16%，P95 降低 25.58%。
+- 最终规范化可见文本摘要一致，Incremental Runtime Fallback 为 0。
+- 原始 JSON 通过 Schema、执行数量和一致性校验。
+- Production 浏览器控制台 0 Error、0 Warning。
+
+完整结论和原始数据见 [`benchmark-report.md`](./benchmark-report.md)。
+
+## 6. User Experience Confirmation
+
+用户在了解预热用途后明确要求移除预热，并确认提交无预热版本。完成 10 轮 Production
+重型基准、原始数据归档和正式报告后，用户再次要求提交本次收尾改动，视为最终体验验证通过。
+
+## 7. Conclusion
 
 本次能力满足 Spec 和 Use Case，可进入本地提交。报告数值只描述当前设备、浏览器、输入与运行时负载，不作为跨设备固定性能
 承诺。

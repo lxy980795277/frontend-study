@@ -132,6 +132,7 @@ export const BenchmarkConfiguration: FC<BenchmarkConfigurationProps> = ({
             <SelectItem value="2">2 轮</SelectItem>
             <SelectItem value="3">3 轮</SelectItem>
             <SelectItem value="5">5 轮</SelectItem>
+            <SelectItem value="10">10 轮</SelectItem>
           </SelectContent>
         </Select>
       </ConfigurationGroup>

@@ -39,7 +39,8 @@ Labs 是所有实验模块的统一入口，只展示模块卡片。选择卡片
 6. “1×/4×”用于观察多实例压力；“注入 Worker 故障”用于验证 Incremental 安全降级，重置后重新启用 Worker。
 7. “指标”展示主线程与 Worker/Patch 分项，“Patch”展示 Request/Revision/操作，“运行时”展示实例阶段和降级原因。
 8. 隔离基准任意时刻只挂载一个 Renderer，不执行预热，直接按
-   `第 1 轮 Legacy→Incremental、第 2 轮 Incremental→Legacy` 的顺序交替测量；总执行数等于轮次的两倍。
+   `第 1 轮 Legacy→Incremental、第 2 轮 Incremental→Legacy` 的顺序交替测量；提供 `1 / 2 / 3 / 5 / 10`
+   轮配置，总执行数等于轮次的两倍。
 9. 隔离基准运行期间锁定模式和配置，只保留“停止”；停止后卸载 Renderer，并生成标记为未完成的诊断报告。
 10. 完整报告展示主线程耗时、Commit 延迟 P50/P95/最大值、总运行时间、Long Task、Worker Request、
     Coalesced Frame、逐轮结果和最终可见内容一致性，可导出 JSON。

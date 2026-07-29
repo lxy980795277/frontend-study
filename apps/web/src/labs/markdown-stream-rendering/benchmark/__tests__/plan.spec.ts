@@ -37,4 +37,18 @@ describe('createBenchmarkPlan', () => {
     expect(first).toEqual(second);
     expect(new Set(first.executions.map((execution) => execution.id)).size).toBe(first.executions.length);
   });
+
+  it('supports a ten-round production benchmark', () => {
+    const plan = createBenchmarkPlan({
+      ...CONFIGURATION,
+      roundCount: 10,
+    });
+
+    expect(plan.executions).toHaveLength(20);
+    expect(
+      plan.executions.slice(-2).map((execution) => {
+        return execution.renderer;
+      }),
+    ).toEqual(['incremental', 'legacy']);
+  });
 });
