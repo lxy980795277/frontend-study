@@ -98,3 +98,15 @@ node-redis 会发送双参数 `AUTH` 并得到 `WRONGPASS`。
   通过奇偶轮交替降低固定顺序偏差，执行间卸载并等待浏览器稳定。
 - 防复发规则：流式性能完成点必须是最终内容已经提交到 DOM，不能用网络结束或最后输入帧已经发出替代。
 - 可迁移结论：性能实验需要先定义隔离级别、输入、顺序和完成屏障；采样函数本身准确，不代表实验因果关系成立。
+
+## Dependabot 分组升级仍需验证运行时与 Peer 兼容线
+
+- 现象：开发工具链分组把 TypeScript 升至 7、`@types/node` 升至 26、ESLint 升至 10，同时单包分支把
+  `@eslint/js` 升至 10；锁文件可以安装，但 `pnpm peers check` 连续报告 ESLint Peer 不一致。
+- 根因：分组升级只保证各 Manifest 变更能够生成锁文件，不保证工作区自定义配置包、实际 Node 运行时和上游
+  Peer Range 共同兼容。当前最新版 `typescript-eslint@8.65.0` 仍要求 TypeScript `<6.1`，项目运行时固定为 Node 24。
+- 解决方案：ESLint 与 `@eslint/js` 保持 9.39，因为最新版 `eslint-plugin-react@7.37.5` 只支持到 ESLint 9；
+  TypeScript 保持 6.0，`@types/node` 保持最新 Node 24 类型线，再重新生成锁文件。
+- 防复发规则：Dependabot 主版本或分组升级合并后必须运行 `pnpm peers check`，并核对工具链 Peer Range、项目
+  Engine 和实际 CI Runtime，不能只以 Lockfile 可安装作为兼容结论。
+- 可迁移结论：类型、Lint 和 Runtime 是一条耦合的工具链；版本号更新可以独立出现，但只能按共同支持区间发布。

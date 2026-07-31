@@ -1,6 +1,6 @@
 {
   "name": "frontend-study",
-  "version": "0.5.0",
+  "version": "0.5.1",
   "private": true,
   "description": "AI Frontend Engineering Lab",
   "author": "liuxinyu",
@@ -46,14 +46,14 @@
   "devDependencies": {
     "@commitlint/cli": "^21.2.1",
     "@commitlint/config-conventional": "^21.2.0",
-    "@types/node": "^26.1.2",
-    "eslint": "^10.8.0",
+    "@types/node": "^24.13.3",
+    "eslint": "^9.39.5",
     "husky": "^9.1.7",
     "knip": "^6.29.0",
     "lint-staged": "^17.2.0",
     "prettier": "^3.9.6",
     "prettier-plugin-tailwindcss": "^0.8.1",
     "turbo": "^2.10.7",
-    "typescript": "~7.0.2"
+    "typescript": "~6.0.3"
   }
 }
