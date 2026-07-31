@@ -4,8 +4,7 @@ import type {
   LegacyMetricsSnapshot,
   LegacySample,
   RunMetricsSnapshot,
-} from './types';
-
+} from '@/labs/markdown-stream-rendering/types/renderer';
 export class MarkdownMetricsCollector {
   private applyMs = 0;
   private coalescedFrames = 0;
@@ -26,43 +25,35 @@ export class MarkdownMetricsCollector {
   private workerDiffMs = 0;
   private workerParseMs = 0;
   private workerRequests = 0;
-
-  recordInputFrame(): void {
+  recordInputFrame = (): void => {
     this.inputFrames += 1;
-  }
-
-  start(): void {
+  };
+  start = (): void => {
     if (this.startedAt === null) {
       this.startedAt = performance.now();
       this.stoppedAt = null;
     }
-  }
-
-  finish(): void {
+  };
+  finish = (): void => {
     if (this.startedAt !== null && this.stoppedAt === null) {
       this.stoppedAt = performance.now();
     }
-  }
-
-  recordLegacy(sample: LegacySample): void {
+  };
+  recordLegacy = (sample: LegacySample): void => {
     this.legacyCommits += 1;
     this.legacyMainTotal += sample.mainMs;
     this.legacyMainMax = Math.max(this.legacyMainMax, sample.mainMs);
-  }
-
-  recordWorkerRequest(): void {
+  };
+  recordWorkerRequest = (): void => {
     this.workerRequests += 1;
-  }
-
-  recordCoalescedFrame(): void {
+  };
+  recordCoalescedFrame = (): void => {
     this.coalescedFrames += 1;
-  }
-
-  recordRuntimeFallback(): void {
+  };
+  recordRuntimeFallback = (): void => {
     this.runtimeFallbacks += 1;
-  }
-
-  recordIncremental(sample: IncrementalSample): void {
+  };
+  recordIncremental = (sample: IncrementalSample): void => {
     const mainMs = sample.applyMs + sample.mountMs;
     this.incrementalCommits += 1;
     this.incrementalMainTotal += mainMs;
@@ -71,21 +62,17 @@ export class MarkdownMetricsCollector {
     this.mountMs += sample.mountMs;
     this.workerParseMs += sample.parseMs;
     this.workerDiffMs += sample.diffMs;
-
     sample.patchOps.forEach((operation) => {
       this.patchOperations += 1;
-
       if (operation === 'tailAppendText') {
         this.tailAppends += 1;
       }
-
       if (operation === 'tailAppendFallbackHtml' || sample.usedSnapshotFallback) {
         this.fallbackPatches += 1;
       }
     });
-  }
-
-  reset(): void {
+  };
+  reset = (): void => {
     this.applyMs = 0;
     this.coalescedFrames = 0;
     this.incrementalCommits = 0;
@@ -105,29 +92,25 @@ export class MarkdownMetricsCollector {
     this.workerDiffMs = 0;
     this.workerParseMs = 0;
     this.workerRequests = 0;
-  }
-
-  snapshot(): RunMetricsSnapshot {
+  };
+  snapshot = (): RunMetricsSnapshot => {
     const elapsedMs = this.startedAt === null ? 0 : (this.stoppedAt ?? performance.now()) - this.startedAt;
-
     return {
       elapsedMs,
       incremental: this.createIncrementalSnapshot(),
       inputFrames: this.inputFrames,
       legacy: this.createLegacySnapshot(),
     };
-  }
-
-  private createLegacySnapshot(): LegacyMetricsSnapshot {
+  };
+  private createLegacySnapshot = (): LegacyMetricsSnapshot => {
     return {
       commits: this.legacyCommits,
       mainAverageMs: this.legacyCommits === 0 ? 0 : this.legacyMainTotal / this.legacyCommits,
       mainMaxMs: this.legacyMainMax,
       mainTotalMs: this.legacyMainTotal,
     };
-  }
-
-  private createIncrementalSnapshot(): IncrementalMetricsSnapshot {
+  };
+  private createIncrementalSnapshot = (): IncrementalMetricsSnapshot => {
     return {
       applyMs: this.applyMs,
       coalescedFrames: this.coalescedFrames,
@@ -143,5 +126,5 @@ export class MarkdownMetricsCollector {
       workerParseMs: this.workerParseMs,
       workerRequests: this.workerRequests,
     };
-  }
+  };
 }

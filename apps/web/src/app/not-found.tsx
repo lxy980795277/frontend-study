@@ -1,9 +1,7 @@
 import Link from 'next/link';
-
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
-
-export default function NotFoundPage() {
+export const NotFoundPage = () => {
   return (
     <main className="flex min-h-dvh items-center justify-center p-6">
       <Card className="w-full max-w-xl">
@@ -18,4 +16,5 @@ export default function NotFoundPage() {
       </Card>
     </main>
   );
-}
+};
+export default NotFoundPage;

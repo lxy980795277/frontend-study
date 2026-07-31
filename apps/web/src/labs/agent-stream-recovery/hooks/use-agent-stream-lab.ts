@@ -1,5 +1,4 @@
 'use client';
-
 import {
   EventType,
   type AgentSimulationOptions,
@@ -11,26 +10,17 @@ import {
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { v7 as uuidv7 } from 'uuid';
-
 import { abortAgentRun, openAgentStream } from '@/services/agent-stream';
 import { RequestError } from '@/services/base-request';
 import { threadsService } from '@/services/threads';
-
 import { createEmptyProjection, toAgUiMessages } from '../core/ag-ui-event-reducer';
 import { getReconnectDelay, getRecoveryDecision } from '../core/reconnect-policy';
 import { createIdleRuntimeEntry, useAgentRuntimeStore } from '../store/runtime';
 import { useAgentThreadStore } from '../store/thread';
+import type { ActiveConnection, LocalDisconnectReason } from '../types/runtime';
 
 const LAB_ROUTE = '/labs/agent-stream-recovery';
-const ABORT_GRACE_PERIOD_MS = 5_000;
-
-type LocalDisconnectReason = 'manual' | 'navigation' | 'stop-timeout';
-
-interface ActiveConnection {
-  controller: AbortController;
-  disconnectReason: LocalDisconnectReason | null;
-  runId: string;
-}
+const ABORT_GRACE_PERIOD_MS = 5000;
 
 const getErrorMessage = (error: unknown): string => {
   if (error instanceof Error) {
@@ -38,7 +28,6 @@ const getErrorMessage = (error: unknown): string => {
   }
   return '未知错误';
 };
-
 const getTerminalKind = (event: AGUIEvent): 'aborted' | 'failed' | 'succeeded' | null => {
   if (event.type === EventType.RUN_ERROR) {
     return 'failed';
@@ -46,58 +35,96 @@ const getTerminalKind = (event: AGUIEvent): 'aborted' | 'failed' | 'succeeded' |
   if (event.type !== EventType.RUN_FINISHED) {
     return null;
   }
-
   const result = event.result as unknown;
   if (typeof result === 'object' && result !== null && 'status' in result && result.status === 'aborted') {
     return 'aborted';
   }
   return 'succeeded';
 };
-
 const wait = async (delayMs: number): Promise<void> => {
   await new Promise<void>((resolve) => {
     globalThis.setTimeout(resolve, delayMs);
   });
 };
-
 const isDefinedThread = (thread: ThreadSummary | undefined): thread is ThreadSummary => {
   return thread !== undefined;
 };
-
 const BUSY_PHASES = new Set(['aborting', 'connecting', 'disconnected', 'reconnect-wait', 'streaming']);
-
 export const useAgentStreamLab = () => {
   const router = useRouter();
   const searchParams = useSearchParams();
   const requestedThreadId = searchParams.get('threadId');
-  const activeThreadId = useAgentThreadStore((state) => state.activeThreadId);
-  const detailStatusByThreadId = useAgentThreadStore((state) => state.detailStatusByThreadId);
-  const listStatus = useAgentThreadStore((state) => state.listStatus);
-  const projectionByThreadId = useAgentThreadStore((state) => state.projectionByThreadId);
-  const threadOrder = useAgentThreadStore((state) => state.threadOrder);
-  const threadsById = useAgentThreadStore((state) => state.threadsById);
-  const applyStreamEvent = useAgentThreadStore((state) => state.applyStreamEvent);
-  const appendUserMessage = useAgentThreadStore((state) => state.appendUserMessage);
-  const hydrateThread = useAgentThreadStore((state) => state.hydrateThread);
-  const removeThread = useAgentThreadStore((state) => state.removeThread);
-  const setActiveThreadId = useAgentThreadStore((state) => state.setActiveThreadId);
-  const setDetailStatus = useAgentThreadStore((state) => state.setDetailStatus);
-  const setListStatus = useAgentThreadStore((state) => state.setListStatus);
-  const setThreadList = useAgentThreadStore((state) => state.setThreadList);
-  const upsertThread = useAgentThreadStore((state) => state.upsertThread);
-  const runtimeByThreadId = useAgentRuntimeStore((state) => state.runtimeByThreadId);
-  const dispatchRuntime = useAgentRuntimeStore((state) => state.dispatch);
-  const resetRuntime = useAgentRuntimeStore((state) => state.reset);
-  const setHeartbeat = useAgentRuntimeStore((state) => state.setHeartbeat);
-  const setRuntimeInput = useAgentRuntimeStore((state) => state.setInput);
+  const activeThreadId = useAgentThreadStore((state) => {
+    return state.activeThreadId;
+  });
+  const detailStatusByThreadId = useAgentThreadStore((state) => {
+    return state.detailStatusByThreadId;
+  });
+  const listStatus = useAgentThreadStore((state) => {
+    return state.listStatus;
+  });
+  const projectionByThreadId = useAgentThreadStore((state) => {
+    return state.projectionByThreadId;
+  });
+  const threadOrder = useAgentThreadStore((state) => {
+    return state.threadOrder;
+  });
+  const threadsById = useAgentThreadStore((state) => {
+    return state.threadsById;
+  });
+  const applyStreamEvent = useAgentThreadStore((state) => {
+    return state.applyStreamEvent;
+  });
+  const appendUserMessage = useAgentThreadStore((state) => {
+    return state.appendUserMessage;
+  });
+  const hydrateThread = useAgentThreadStore((state) => {
+    return state.hydrateThread;
+  });
+  const removeThread = useAgentThreadStore((state) => {
+    return state.removeThread;
+  });
+  const setActiveThreadId = useAgentThreadStore((state) => {
+    return state.setActiveThreadId;
+  });
+  const setDetailStatus = useAgentThreadStore((state) => {
+    return state.setDetailStatus;
+  });
+  const setListStatus = useAgentThreadStore((state) => {
+    return state.setListStatus;
+  });
+  const setThreadList = useAgentThreadStore((state) => {
+    return state.setThreadList;
+  });
+  const upsertThread = useAgentThreadStore((state) => {
+    return state.upsertThread;
+  });
+  const runtimeByThreadId = useAgentRuntimeStore((state) => {
+    return state.runtimeByThreadId;
+  });
+  const dispatchRuntime = useAgentRuntimeStore((state) => {
+    return state.dispatch;
+  });
+  const resetRuntime = useAgentRuntimeStore((state) => {
+    return state.reset;
+  });
+  const setHeartbeat = useAgentRuntimeStore((state) => {
+    return state.setHeartbeat;
+  });
+  const setRuntimeInput = useAgentRuntimeStore((state) => {
+    return state.setInput;
+  });
   const [pageError, setPageError] = useState<string | null>(null);
   const activeConnectionRef = useRef<ActiveConnection | null>(null);
   const abortGraceTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const connectionGenerationRef = useRef(0);
   const terminalRunIdsRef = useRef(new Set<string>());
-
   const threads = useMemo(() => {
-    return threadOrder.map((threadId) => threadsById[threadId]).filter(isDefinedThread);
+    return threadOrder
+      .map((threadId) => {
+        return threadsById[threadId];
+      })
+      .filter(isDefinedThread);
   }, [threadOrder, threadsById]);
   const activeProjection = activeThreadId
     ? (projectionByThreadId[activeThreadId] ?? createEmptyProjection())
@@ -107,17 +134,14 @@ export const useAgentStreamLab = () => {
     : createIdleRuntimeEntry();
   const activeThread = activeThreadId ? (threadsById[activeThreadId] ?? null) : null;
   const activeDetailStatus = activeThreadId ? (detailStatusByThreadId[activeThreadId] ?? 'idle') : 'idle';
-
   const disconnectCurrent = useCallback((reason: LocalDisconnectReason): void => {
     const activeConnection = activeConnectionRef.current;
     if (!activeConnection) {
       return;
     }
-
     activeConnection.disconnectReason = reason;
     activeConnection.controller.abort(reason);
   }, []);
-
   const refreshThreadList = useCallback(async (): Promise<void> => {
     setListStatus('loading');
     try {
@@ -128,19 +152,17 @@ export const useAgentStreamLab = () => {
       setPageError(getErrorMessage(error));
     }
   }, [setListStatus, setThreadList]);
-
   const startSession = useCallback(
     (threadId: string, initialInput: LabRunAgentInput, initialCursor?: string): void => {
+      // generation 让旧请求自然失效，避免切换 Thread 后的迟到事件污染当前会话。
       connectionGenerationRef.current += 1;
       const generation = connectionGenerationRef.current;
       disconnectCurrent('navigation');
       setRuntimeInput(threadId, initialInput);
-
       void (async () => {
         let attempt = 0;
         let cursor = initialCursor;
         let input = initialInput;
-
         while (generation === connectionGenerationRef.current) {
           let terminal: 'aborted' | 'failed' | 'succeeded' | null = null;
           const controller = new AbortController();
@@ -151,7 +173,6 @@ export const useAgentStreamLab = () => {
           };
           activeConnectionRef.current = connection;
           dispatchRuntime(threadId, { runId: input.runId, type: 'CONNECT' });
-
           try {
             const completion = await openAgentStream({
               input,
@@ -180,7 +201,6 @@ export const useAgentStreamLab = () => {
               },
               signal: controller.signal,
             });
-
             if (generation !== connectionGenerationRef.current) {
               return;
             }
@@ -197,7 +217,6 @@ export const useAgentStreamLab = () => {
               }
               return;
             }
-
             throw new RequestError({
               code: 'PREMATURE_EOF',
               message: 'SSE 在收到 AG-UI 终态前结束',
@@ -208,9 +227,9 @@ export const useAgentStreamLab = () => {
             if (generation !== connectionGenerationRef.current) {
               return;
             }
-
             const decision = getRecoveryDecision(error);
             if (decision === 'refresh-history') {
+              // 仅在游标失效时回源历史；普通网络中断继续沿用 lastEventId 增量续传。
               try {
                 const detail = await threadsService.detail(threadId);
                 hydrateThread(detail);
@@ -231,7 +250,6 @@ export const useAgentStreamLab = () => {
                 return;
               }
             }
-
             if (decision === 'retry') {
               attempt += 1;
               const delayMs = getReconnectDelay(attempt);
@@ -249,7 +267,6 @@ export const useAgentStreamLab = () => {
                 continue;
               }
             }
-
             dispatchRuntime(threadId, {
               message: getErrorMessage(error),
               type: 'FATAL',
@@ -274,11 +291,9 @@ export const useAgentStreamLab = () => {
       setRuntimeInput,
     ],
   );
-
   useEffect(() => {
     void Promise.resolve().then(refreshThreadList);
   }, [refreshThreadList]);
-
   useEffect(() => {
     if (!requestedThreadId) {
       connectionGenerationRef.current += 1;
@@ -286,13 +301,11 @@ export const useAgentStreamLab = () => {
       setActiveThreadId(null);
       return;
     }
-
     const currentThreadState = useAgentThreadStore.getState();
     const requestedDetailStatus = currentThreadState.detailStatusByThreadId[requestedThreadId] ?? 'idle';
     if (requestedThreadId === currentThreadState.activeThreadId && requestedDetailStatus !== 'idle') {
       return;
     }
-
     const controller = new AbortController();
     void Promise.resolve().then(async () => {
       connectionGenerationRef.current += 1;
@@ -300,7 +313,6 @@ export const useAgentStreamLab = () => {
       setActiveThreadId(requestedThreadId);
       setDetailStatus(requestedThreadId, 'loading');
       setPageError(null);
-
       try {
         const detail = await threadsService.detail(requestedThreadId, controller.signal);
         hydrateThread(detail);
@@ -317,7 +329,6 @@ export const useAgentStreamLab = () => {
         setPageError(getErrorMessage(error));
       }
     });
-
     return () => {
       controller.abort();
     };
@@ -330,7 +341,6 @@ export const useAgentStreamLab = () => {
     setDetailStatus,
     startSession,
   ]);
-
   useEffect(() => {
     return () => {
       connectionGenerationRef.current += 1;
@@ -340,7 +350,6 @@ export const useAgentStreamLab = () => {
       }
     };
   }, [disconnectCurrent]);
-
   const sendMessage = useCallback(
     async (content: string, simulation: AgentSimulationOptions): Promise<void> => {
       const prompt = content.trim();
@@ -351,7 +360,6 @@ export const useAgentStreamLab = () => {
         setPageError('当前会话仍有运行中的请求，请等待终态或先停止运行');
         return;
       }
-
       setPageError(null);
       let threadId = activeThreadId;
       let projection = activeProjection;
@@ -369,7 +377,6 @@ export const useAgentStreamLab = () => {
           return;
         }
       }
-
       const userMessage: UserMessage = {
         content: prompt,
         id: uuidv7(),
@@ -399,12 +406,10 @@ export const useAgentStreamLab = () => {
       upsertThread,
     ],
   );
-
   const abortRun = useCallback(async (): Promise<void> => {
     if (!activeThreadId || !activeRuntime.runId) {
       return;
     }
-
     const runId = activeRuntime.runId;
     dispatchRuntime(activeThreadId, { type: 'ABORT_REQUESTED' });
     try {
@@ -424,7 +429,6 @@ export const useAgentStreamLab = () => {
       });
     }
   }, [activeRuntime.runId, activeThreadId, disconnectCurrent, dispatchRuntime]);
-
   const deleteThread = useCallback(
     async (threadId: string): Promise<void> => {
       try {
@@ -441,28 +445,24 @@ export const useAgentStreamLab = () => {
     },
     [activeThreadId, disconnectCurrent, removeThread, router],
   );
-
   const newThread = useCallback((): void => {
     connectionGenerationRef.current += 1;
     disconnectCurrent('navigation');
     setActiveThreadId(null);
     router.replace(LAB_ROUTE, { scroll: false });
   }, [disconnectCurrent, router, setActiveThreadId]);
-
   const selectThread = useCallback(
     (threadId: string): void => {
       router.replace(`${LAB_ROUTE}?threadId=${threadId}`, { scroll: false });
     },
     [router],
   );
-
   const retry = useCallback((): void => {
     if (!activeThreadId || !activeRuntime.input || !activeRuntime.runId) {
       return;
     }
     startSession(activeThreadId, activeRuntime.input, activeRuntime.lastEventId ?? undefined);
   }, [activeRuntime.input, activeRuntime.lastEventId, activeRuntime.runId, activeThreadId, startSession]);
-
   const disconnect = useCallback((): void => {
     if (!activeThreadId || activeRuntime.phase !== 'streaming') {
       return;
@@ -470,7 +470,6 @@ export const useAgentStreamLab = () => {
     dispatchRuntime(activeThreadId, { type: 'MANUAL_DISCONNECTED' });
     disconnectCurrent('manual');
   }, [activeRuntime.phase, activeThreadId, disconnectCurrent, dispatchRuntime]);
-
   const reconnect = useCallback((): void => {
     if (!activeThreadId || !activeRuntime.input || !activeRuntime.runId || activeRuntime.phase !== 'disconnected') {
       return;
@@ -486,7 +485,6 @@ export const useAgentStreamLab = () => {
     dispatchRuntime,
     startSession,
   ]);
-
   return {
     abortRun,
     activeDetailStatus,

@@ -1,11 +1,9 @@
 import { Activity, Braces, DatabaseZap, ShieldCheck } from 'lucide-react';
 import type { FC } from 'react';
-
 import { Badge } from '@/components/ui/badge';
 import { HealthPanel } from '@/home/components/health-panel';
 import { HomeHeader } from '@/home/components/home-header';
 import { LabsEntryCard } from '@/home/components/labs-entry-card';
-
 const CAPABILITIES = [
   {
     description: '可观测、可恢复、可压测的真实交互链路',
@@ -28,7 +26,6 @@ const CAPABILITIES = [
     title: '交付标准',
   },
 ] as const;
-
 export const HomePage: FC = () => {
   return (
     <div className="min-h-dvh">

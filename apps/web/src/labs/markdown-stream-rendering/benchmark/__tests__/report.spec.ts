@@ -1,28 +1,23 @@
 import { createBenchmarkConsistency, createVisibleContentHash } from '../report';
 import { summarizeLatency } from '../statistics';
-import type { BenchmarkExecutionResult } from '../types';
-
+import type { BenchmarkExecutionResult } from '../../types/benchmark';
 describe('benchmark report', () => {
   it('normalizes insignificant whitespace before hashing visible content', () => {
     expect(createVisibleContentHash('hello  \n world')).toBe(createVisibleContentHash('hello world'));
   });
-
   it('passes consistency only when every renderer has one matching hash and final length', () => {
     const results = [createResult('legacy', 'same'), createResult('incremental', 'same')];
-
     expect(createBenchmarkConsistency(results)).toEqual({
       incrementalHashes: ['same'],
       legacyHashes: ['same'],
       passed: true,
     });
-
     expect(createBenchmarkConsistency([createResult('legacy', 'a'), createResult('incremental', 'b')]).passed).toBe(
       false,
     );
   });
 });
-
-function createResult(renderer: 'incremental' | 'legacy', contentHash: string): BenchmarkExecutionResult {
+const createResult = (renderer: 'incremental' | 'legacy', contentHash: string): BenchmarkExecutionResult => {
   return {
     committedFrames: 1,
     contentHash,
@@ -70,4 +65,4 @@ function createResult(renderer: 'incremental' | 'legacy', contentHash: string): 
     },
     wallMs: 5,
   };
-}
+};

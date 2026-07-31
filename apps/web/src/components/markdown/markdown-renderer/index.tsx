@@ -1,14 +1,11 @@
 import type { FC } from 'react';
 import ReactMarkdown, { type Components } from 'react-markdown';
 import remarkGfm from 'remark-gfm';
-
 import { cn } from '@/utils/cn';
-
 interface MarkdownRendererProps {
   className?: string;
   content: string;
 }
-
 const MARKDOWN_COMPONENTS: Components = {
   a: ({ children, href }) => {
     return (
@@ -73,7 +70,6 @@ const MARKDOWN_COMPONENTS: Components = {
     return <ul className="my-3 list-disc space-y-1.5 pl-6">{children}</ul>;
   },
 };
-
 export const MarkdownRenderer: FC<MarkdownRendererProps> = ({ className, content }) => {
   return (
     <div className={cn('min-w-0 break-words', className)}>

@@ -1,12 +1,8 @@
 'use client';
-
 import * as TabsPrimitive from '@radix-ui/react-tabs';
 import type { ComponentProps, FC } from 'react';
-
 import { cn } from '@/utils/cn';
-
 export const Tabs = TabsPrimitive.Root;
-
 export const TabsList: FC<ComponentProps<typeof TabsPrimitive.List>> = ({ className, ...props }) => {
   return (
     <TabsPrimitive.List
@@ -15,7 +11,6 @@ export const TabsList: FC<ComponentProps<typeof TabsPrimitive.List>> = ({ classN
     />
   );
 };
-
 export const TabsTrigger: FC<ComponentProps<typeof TabsPrimitive.Trigger>> = ({ className, ...props }) => {
   return (
     <TabsPrimitive.Trigger
@@ -27,7 +22,6 @@ export const TabsTrigger: FC<ComponentProps<typeof TabsPrimitive.Trigger>> = ({ 
     />
   );
 };
-
 export const TabsContent: FC<ComponentProps<typeof TabsPrimitive.Content>> = ({ className, ...props }) => {
   return <TabsPrimitive.Content className={cn('mt-4 outline-none', className)} {...props} />;
 };

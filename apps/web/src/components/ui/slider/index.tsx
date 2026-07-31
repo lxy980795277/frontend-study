@@ -1,10 +1,7 @@
 'use client';
-
 import * as SliderPrimitive from '@radix-ui/react-slider';
 import type { ComponentProps, FC } from 'react';
-
 import { cn } from '@/utils/cn';
-
 export const Slider: FC<ComponentProps<typeof SliderPrimitive.Root>> = ({ className, ...props }) => {
   return (
     <SliderPrimitive.Root

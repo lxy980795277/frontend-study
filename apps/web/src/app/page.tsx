@@ -1,5 +1,5 @@
 import { redirect } from 'next/navigation';
-
-export default function RootPage() {
+export const RootPage = () => {
   redirect('/home');
-}
+};
+export default RootPage;

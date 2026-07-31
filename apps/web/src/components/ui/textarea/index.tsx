@@ -1,7 +1,5 @@
 import type { ComponentProps, FC } from 'react';
-
 import { cn } from '@/utils/cn';
-
 export const Textarea: FC<ComponentProps<'textarea'>> = ({ className, ...props }) => {
   return (
     <textarea

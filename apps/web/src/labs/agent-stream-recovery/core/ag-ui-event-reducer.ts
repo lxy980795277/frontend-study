@@ -5,46 +5,13 @@ import {
   type ThreadMessage,
   type ToolCall,
 } from '@frontend-study/shared-types';
+import type { ChatMessageView, ConversationProjection, ProtocolLogEntry, ToolCallView } from '../types/conversation';
 
-const MAX_PROCESSED_STREAM_IDS = 1_000;
+const MAX_PROCESSED_STREAM_IDS = 1000;
 const MAX_PROTOCOL_LOG_ENTRIES = 200;
-
 const isRecord = (value: unknown): value is Record<string, unknown> => {
   return typeof value === 'object' && value !== null && !Array.isArray(value);
 };
-
-export interface ToolCallView {
-  argumentsText: string;
-  id: string;
-  name: string;
-  parentMessageId: string | null;
-  result: string | null;
-  status: 'arguments-streaming' | 'complete' | 'running';
-}
-
-export interface ChatMessageView {
-  content: string;
-  id: string;
-  role: Message['role'];
-  status: 'complete' | 'interrupted' | 'streaming';
-  toolCallId: string | null;
-  toolCalls: ToolCallView[];
-}
-
-export interface ProtocolLogEntry {
-  event: AGUIEvent;
-  receivedAt: number;
-  streamId: string;
-}
-
-export interface ConversationProjection {
-  duplicateEvents: number;
-  messages: ChatMessageView[];
-  processedStreamIds: string[];
-  protocolLog: ProtocolLogEntry[];
-  terminal: 'aborted' | 'failed' | 'succeeded' | null;
-}
-
 export const createEmptyProjection = (): ConversationProjection => {
   return {
     duplicateEvents: 0,
@@ -54,13 +21,11 @@ export const createEmptyProjection = (): ConversationProjection => {
     terminal: null,
   };
 };
-
 const readContent = (message: Message): string => {
   const content: unknown = 'content' in message ? message.content : '';
   if (typeof content === 'string') {
     return content;
   }
-
   if (Array.isArray(content)) {
     return content
       .map((part) => {
@@ -74,10 +39,8 @@ const readContent = (message: Message): string => {
       })
       .join('');
   }
-
   return '';
 };
-
 const mapToolCall = (toolCall: ToolCall, parentMessageId: string): ToolCallView => {
   return {
     argumentsText: toolCall.function.arguments,
@@ -88,7 +51,6 @@ const mapToolCall = (toolCall: ToolCall, parentMessageId: string): ToolCallView 
     status: 'complete',
   };
 };
-
 const mapMessage = (message: Message, status: ChatMessageView['status'] = 'complete'): ChatMessageView => {
   return {
     content: readContent(message),
@@ -104,13 +66,11 @@ const mapMessage = (message: Message, status: ChatMessageView['status'] = 'compl
         : [],
   };
 };
-
 const attachToolResults = (messages: ChatMessageView[], sourceMessages: Message[]): ChatMessageView[] => {
   return sourceMessages.reduce((currentMessages, sourceMessage) => {
     if (sourceMessage.role !== 'tool') {
       return currentMessages;
     }
-
     const toolCallId = sourceMessage.toolCallId;
     const result = readContent(sourceMessage);
     return updateToolCall(currentMessages, toolCallId, (toolCall) => {
@@ -122,32 +82,31 @@ const attachToolResults = (messages: ChatMessageView[], sourceMessages: Message[
     });
   }, messages);
 };
-
 export const createProjectionFromHistory = (messages: ThreadMessage[]): ConversationProjection => {
   const projection = createEmptyProjection();
-  const sourceMessages = messages.map((item) => item.message);
+  const sourceMessages = messages.map((item) => {
+    return item.message;
+  });
   const mappedMessages = messages.map((item) => {
     return mapMessage(item.message, item.status === 'INTERRUPTED' ? 'interrupted' : 'complete');
   });
   projection.messages = attachToolResults(mappedMessages, sourceMessages);
-
   return projection;
 };
-
 const addProcessedStreamId = (ids: string[], streamId: string): string[] => {
   return [...ids, streamId].slice(-MAX_PROCESSED_STREAM_IDS);
 };
-
 const addProtocolLog = (log: ProtocolLogEntry[], streamId: string, event: AGUIEvent): ProtocolLogEntry[] => {
   return [...log, { event, receivedAt: Date.now(), streamId }].slice(-MAX_PROTOCOL_LOG_ENTRIES);
 };
-
 const upsertMessage = (
   messages: ChatMessageView[],
   messageId: string,
   update: (message: ChatMessageView) => ChatMessageView,
 ): ChatMessageView[] => {
-  const existingIndex = messages.findIndex((message) => message.id === messageId);
+  const existingIndex = messages.findIndex((message) => {
+    return message.id === messageId;
+  });
   if (existingIndex === -1) {
     return [
       ...messages,
@@ -161,12 +120,10 @@ const upsertMessage = (
       }),
     ];
   }
-
   return messages.map((message, index) => {
     return index === existingIndex ? update(message) : message;
   });
 };
-
 const updateToolCall = (
   messages: ChatMessageView[],
   toolCallId: string,
@@ -181,26 +138,25 @@ const updateToolCall = (
     };
   });
 };
-
 const isAbortedResult = (result: unknown): boolean => {
   return typeof result === 'object' && result !== null && 'status' in result && result.status === 'aborted';
 };
-
 export const applyAgentStreamEvent = (
   projection: ConversationProjection,
   streamId: string,
   event: AGUIEvent,
 ): ConversationProjection => {
+  // 重连会从 lastEventId 边界重复投递事件；streamId 是投影层唯一的幂等键。
   if (projection.processedStreamIds.includes(streamId)) {
     return {
       ...projection,
       duplicateEvents: projection.duplicateEvents + 1,
     };
   }
-
   let messages = projection.messages;
   let terminal = projection.terminal;
 
+  // Reducer 只把协议事件投影成 UI 状态，不在这里触发网络或 Store 副作用。
   switch (event.type) {
     case EventType.MESSAGES_SNAPSHOT:
       messages = attachToolResults(
@@ -238,7 +194,11 @@ export const applyAgentStreamEvent = (
       break;
     case EventType.TOOL_CALL_START:
       messages = upsertMessage(messages, event.parentMessageId ?? 'orphan-tool-calls', (message) => {
-        if (message.toolCalls.some((toolCall) => toolCall.id === event.toolCallId)) {
+        if (
+          message.toolCalls.some((toolCall) => {
+            return toolCall.id === event.toolCallId;
+          })
+        ) {
           return message;
         }
         return {
@@ -289,7 +249,6 @@ export const applyAgentStreamEvent = (
     default:
       break;
   }
-
   return {
     ...projection,
     messages,
@@ -298,21 +257,27 @@ export const applyAgentStreamEvent = (
     terminal,
   };
 };
-
 export const appendOptimisticUserMessage = (
   projection: ConversationProjection,
-  message: Extract<Message, { role: 'user' }>,
+  message: Extract<
+    Message,
+    {
+      role: 'user';
+    }
+  >,
 ): ConversationProjection => {
-  if (projection.messages.some((item) => item.id === message.id)) {
+  if (
+    projection.messages.some((item) => {
+      return item.id === message.id;
+    })
+  ) {
     return projection;
   }
-
   return {
     ...projection,
     messages: [...projection.messages, mapMessage(message)],
   };
 };
-
 export const toAgUiMessages = (projection: ConversationProjection): Message[] => {
   return projection.messages
     .filter((message) => {
@@ -351,7 +316,6 @@ export const toAgUiMessages = (projection: ConversationProjection): Message[] =>
           toolCallId: message.toolCallId ?? message.id,
         };
       }
-
       return {
         content: message.content,
         id: message.id,

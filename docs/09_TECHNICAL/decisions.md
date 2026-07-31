@@ -70,3 +70,29 @@ Lab，不替换公共 Markdown 组件，也不在出现真实复用前提取 Pac
 性能测试使用一份公共静态 Markdown 源，在浏览器中固定复制 10 份形成约 47 万字符的历史基线。基线渲染通过
 `committedContentLength` 明确确认，不使用延时猜测；确认后重置 Collector，只测量尾部确定性续写。这样对比的是
 “超大历史上下文上继续生成”的主线程成本，同时避免在仓库中维护十份重复 Fixture。
+
+## ADR-012 · 大数据表格采用纯 TypeScript Core 与可替换 Renderer
+
+默认一百万行 × 一百列只表示逻辑规模。单元格由固定 Seed 按坐标惰性生成，未查询时使用恒等行映射，排序或过滤时只
+物化 `Uint32Array` 行索引；禁止在主线程建立完整 `rows[][]`。
+
+纯 HTML `div` DOM 双向虚拟窗口、主线程 Canvas 和 Worker OffscreenCanvas 共享列前缀、二维可见范围、格式化和
+可见文本摘要。DOM Cell 不通过 SVG `foreignObject` 承载，SVG 只保留给有界的选区与列宽交互 Overlay。百万行逻辑
+高度通过运行时尺寸探测与分段原生滚动映射，不把任意高度直接交给浏览器。
+
+Worker 消息携带协议版本、Renderer ID、Session ID、Request ID 与 Query/Frame 版本。OffscreenCanvas 转移后发生
+错误时终止旧 Worker、替换已经转移的 Canvas，并向新的 Main Canvas 重放当前 Snapshot；Fallback 样本在 Benchmark
+中单独标记，不冒充 Worker 性能。
+
+首期实现保留在 `large-data-grid` Lab 内，React 只作为生命周期与 UI Adapter。未来需要标准 Custom Element 时，
+在稳定 Core 上增加 Web Component Adapter；至少出现两个真实调用方并完成 API 评审前，不提取公共 Package。
+
+## ADR-013 · Lab 使用领域类型目录与拥有关系组件树
+
+每个 Lab 在根目录建立领域化 `types/`，除组件 Props 外的状态、协议、Controller、Renderer 和 Benchmark 类型只能
+在这里声明。Lab 上下文由 `labs/<lab>/` 提供，组件直接从 `components/index.tsx` 开始，并按 Workbench、Benchmark、
+Renderer、Inspector 与 Overlay 的真实拥有关系嵌套；不增加 `components/lab/` 包装层，也不保留旧路径转发。
+
+前端运行时函数统一使用块级箭头函数，Class 仅保留无法替代的 `constructor`。ESLint 提供编辑期反馈，
+`check:structure` 再通过 TypeScript AST 校验函数声明、Method、隐式返回、类型归属与组件根层级。内部不变量不使用
+默认值或额外空值分支掩盖错误；网络、Worker、浏览器能力、安全和资源生命周期边界继续执行显式校验。

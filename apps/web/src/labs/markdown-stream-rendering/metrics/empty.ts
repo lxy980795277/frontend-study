@@ -1,6 +1,5 @@
-import type { RunMetricsSnapshot } from './types';
-
-export function createEmptyMetricsSnapshot(): RunMetricsSnapshot {
+import type { RunMetricsSnapshot } from '@/labs/markdown-stream-rendering/types/renderer';
+export const createEmptyMetricsSnapshot = (): RunMetricsSnapshot => {
   return {
     elapsedMs: 0,
     incremental: {
@@ -26,4 +25,4 @@ export function createEmptyMetricsSnapshot(): RunMetricsSnapshot {
       mainTotalMs: 0,
     },
   };
-}
+};

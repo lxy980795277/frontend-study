@@ -1,37 +1,4 @@
-export type ConnectionPhase =
-  | 'aborted'
-  | 'aborting'
-  | 'completed'
-  | 'connecting'
-  | 'disconnected'
-  | 'failed'
-  | 'idle'
-  | 'reconnect-wait'
-  | 'streaming';
-
-export interface StreamRuntimeState {
-  abortRequested: boolean;
-  error: string | null;
-  lastEventId: string | null;
-  nextRetryAt: number | null;
-  phase: ConnectionPhase;
-  reconnectAttempt: number;
-  runId: string | null;
-  terminalEventReceived: boolean;
-}
-
-export type StreamRuntimeAction =
-  | { runId: string; type: 'CONNECT' }
-  | { type: 'CONNECTED' }
-  | { streamId: string; terminal?: 'aborted' | 'failed' | 'succeeded'; type: 'EVENT_APPLIED' }
-  | { type: 'MANUAL_DISCONNECTED' }
-  | { type: 'RECONNECT_REQUESTED' }
-  | { message: string; type: 'INTERRUPTED' }
-  | { attempt: number; nextRetryAt: number; type: 'RETRY_SCHEDULED' }
-  | { message: string; type: 'FATAL' }
-  | { type: 'ABORT_REQUESTED' }
-  | { message: string; type: 'ABORT_TIMEOUT' }
-  | { type: 'RESET' };
+import type { StreamRuntimeAction, StreamRuntimeState } from '../types/runtime';
 
 export const createIdleRuntime = (): StreamRuntimeState => {
   return {
@@ -45,7 +12,6 @@ export const createIdleRuntime = (): StreamRuntimeState => {
     terminalEventReceived: false,
   };
 };
-
 export const reduceStreamRuntime = (state: StreamRuntimeState, action: StreamRuntimeAction): StreamRuntimeState => {
   switch (action.type) {
     case 'CONNECT':
@@ -69,12 +35,13 @@ export const reduceStreamRuntime = (state: StreamRuntimeState, action: StreamRun
           phase: state.abortRequested ? 'aborting' : 'streaming',
         };
       }
-
       const phaseByTerminal = {
         aborted: 'aborted',
         failed: 'failed',
         succeeded: 'completed',
       } as const;
+
+      // 终态事件一旦落地便不可被后续断线信号改写。
       return {
         ...state,
         lastEventId: action.streamId,

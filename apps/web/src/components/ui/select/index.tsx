@@ -1,15 +1,11 @@
 'use client';
-
 import * as SelectPrimitive from '@radix-ui/react-select';
 import { Check, ChevronDown, ChevronUp } from 'lucide-react';
 import type { ComponentProps, FC } from 'react';
-
 import { cn } from '@/utils/cn';
-
 export const Select = SelectPrimitive.Root;
 export const SelectGroup = SelectPrimitive.Group;
 export const SelectValue = SelectPrimitive.Value;
-
 export const SelectTrigger: FC<ComponentProps<typeof SelectPrimitive.Trigger>> = ({
   children,
   className,
@@ -30,7 +26,6 @@ export const SelectTrigger: FC<ComponentProps<typeof SelectPrimitive.Trigger>> =
     </SelectPrimitive.Trigger>
   );
 };
-
 export const SelectContent: FC<ComponentProps<typeof SelectPrimitive.Content>> = ({
   children,
   className,
@@ -60,7 +55,6 @@ export const SelectContent: FC<ComponentProps<typeof SelectPrimitive.Content>> =
     </SelectPrimitive.Portal>
   );
 };
-
 export const SelectItem: FC<ComponentProps<typeof SelectPrimitive.Item>> = ({ children, className, ...props }) => {
   return (
     <SelectPrimitive.Item

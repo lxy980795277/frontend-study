@@ -1,12 +1,10 @@
 import { ArrowRight, Layers3 } from 'lucide-react';
 import Link from 'next/link';
 import type { FC } from 'react';
-
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { LAB_REGISTRY } from '@/config/lab-registry';
-
 export const LabsEntryCard: FC = () => {
   return (
     <Card className="overflow-hidden border-primary/15 bg-primary/[0.035] shadow-none">

@@ -172,7 +172,11 @@ test('renders the same unsafe fixture in both columns without executing unsafe H
   expect(incrementalText).toBe(legacyText);
   await expect(page.locator('.msr-markdown script')).toHaveCount(0);
   await expect(page.locator('.msr-markdown [onerror]')).toHaveCount(0);
-  expect(await page.evaluate(() => Reflect.has(window, '__unsafe_markdown_executed__'))).toBe(false);
+  expect(
+    await page.evaluate(() => {
+      return Reflect.has(window, '__unsafe_markdown_executed__');
+    }),
+  ).toBe(false);
 });
 
 test('falls back safely after an injected Worker failure', async ({ page }) => {

@@ -8,7 +8,7 @@ import { createBaseConfig } from './base.mjs';
  * @param {{ project?: string[]; tsconfigRootDir: string }} options 配置参数
  * @returns {import('typescript-eslint').ConfigWithExtends[]}
  */
-export function createNestConfig(options) {
+export const createNestConfig = (options) => {
   const { project = ['./tsconfig.json'], tsconfigRootDir } = options;
 
   return typescriptEslint.config(
@@ -46,4 +46,4 @@ export function createNestConfig(options) {
       },
     },
   );
-}
+};

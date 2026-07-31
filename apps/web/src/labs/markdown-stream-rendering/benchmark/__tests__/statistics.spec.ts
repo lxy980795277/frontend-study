@@ -1,6 +1,5 @@
 import { summarizeLatency, summarizeRenderer } from '../statistics';
-import type { BenchmarkExecutionResult } from '../types';
-
+import type { BenchmarkExecutionResult } from '../../types/benchmark';
 describe('benchmark statistics', () => {
   it('calculates nearest-rank latency percentiles', () => {
     expect(summarizeLatency([100, 10, 40, 20, 30])).toEqual({
@@ -18,16 +17,13 @@ describe('benchmark statistics', () => {
       sampleCount: 0,
     });
   });
-
   it('aggregates every execution for the selected renderer', () => {
     const results = [
       createResult('legacy', 1, [10, 20], 100),
       createResult('legacy', 2, [30], 200),
       createResult('incremental', 1, [2], 50),
     ];
-
     const summary = summarizeRenderer(results, 'legacy');
-
     expect(summary.executions).toBe(2);
     expect(summary.frameLatency).toMatchObject({
       averageMs: 20,
@@ -41,13 +37,12 @@ describe('benchmark statistics', () => {
     expect(summary.inputFrames).toBe(6);
   });
 });
-
-function createResult(
+const createResult = (
   renderer: BenchmarkExecutionResult['execution']['renderer'],
   round: number,
   latencies: number[],
   wallMs: number,
-): BenchmarkExecutionResult {
+): BenchmarkExecutionResult => {
   return {
     committedFrames: latencies.length,
     contentHash: 'same',
@@ -95,4 +90,4 @@ function createResult(
     },
     wallMs,
   };
-}
+};

@@ -1,15 +1,11 @@
 'use client';
-
 import * as DialogPrimitive from '@radix-ui/react-dialog';
 import { X } from 'lucide-react';
 import type { ComponentProps, FC } from 'react';
-
 import { cn } from '@/utils/cn';
-
 export const Sheet = DialogPrimitive.Root;
 export const SheetTrigger = DialogPrimitive.Trigger;
 export const SheetClose = DialogPrimitive.Close;
-
 export const SheetContent: FC<ComponentProps<typeof DialogPrimitive.Content>> = ({ children, className, ...props }) => {
   return (
     <DialogPrimitive.Portal>
@@ -30,15 +26,12 @@ export const SheetContent: FC<ComponentProps<typeof DialogPrimitive.Content>> = 
     </DialogPrimitive.Portal>
   );
 };
-
 export const SheetHeader: FC<ComponentProps<'div'>> = ({ className, ...props }) => {
   return <div className={cn('space-y-1.5 border-b p-6', className)} {...props} />;
 };
-
 export const SheetTitle: FC<ComponentProps<typeof DialogPrimitive.Title>> = ({ className, ...props }) => {
   return <DialogPrimitive.Title className={cn('font-semibold', className)} {...props} />;
 };
-
 export const SheetDescription: FC<ComponentProps<typeof DialogPrimitive.Description>> = ({ className, ...props }) => {
   return <DialogPrimitive.Description className={cn('text-sm text-muted-foreground', className)} {...props} />;
 };

@@ -1,0 +1,2 @@
+export const GRID_HEADER_HEIGHT_CSS_PX = 32;
+export const GRID_ROW_HEADER_WIDTH_CSS_PX = 72;

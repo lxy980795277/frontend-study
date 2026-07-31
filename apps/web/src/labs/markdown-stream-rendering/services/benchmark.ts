@@ -1,9 +1,7 @@
 const BENCHMARK_ASSET_PATH = '/fixtures/markdown-stream-rendering/llm-benchmark.md';
-
 export class BenchmarkLoadError extends Error {
   readonly retryable: boolean;
   readonly status: number;
-
   constructor(message: string, status: number, retryable = true) {
     super(message);
     this.name = 'BenchmarkLoadError';
@@ -11,10 +9,8 @@ export class BenchmarkLoadError extends Error {
     this.status = status;
   }
 }
-
-export async function loadBenchmarkMarkdown(signal?: AbortSignal): Promise<string> {
+export const loadBenchmarkMarkdown = async (signal?: AbortSignal): Promise<string> => {
   let response: Response;
-
   try {
     response = await fetch(BENCHMARK_ASSET_PATH, {
       cache: 'force-cache',
@@ -27,19 +23,14 @@ export async function loadBenchmarkMarkdown(signal?: AbortSignal): Promise<strin
     if (error instanceof DOMException && error.name === 'AbortError') {
       throw error;
     }
-
     throw new BenchmarkLoadError('超大 Markdown 基准加载失败，请重试。', 0);
   }
-
   if (!response.ok) {
     throw new BenchmarkLoadError(`超大 Markdown 基准加载失败（HTTP ${response.status}）。`, response.status);
   }
-
   const source = await response.text();
-
   if (source.trim().length === 0) {
     throw new BenchmarkLoadError('超大 Markdown 基准文件为空。', response.status, false);
   }
-
   return source;
-}
+};

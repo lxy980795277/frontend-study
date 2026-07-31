@@ -1,23 +1,18 @@
 'use client';
-
 import { RotateCcw } from 'lucide-react';
 import { useEffect } from 'react';
-
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
-
 interface ErrorPageProps {
   error: Error & {
     digest?: string;
   };
   reset: () => void;
 }
-
-export default function ErrorPage({ error, reset }: ErrorPageProps) {
+export const ErrorPage = ({ error, reset }: ErrorPageProps) => {
   useEffect(() => {
     console.error(error);
   }, [error]);
-
   return (
     <div className="flex min-h-[60vh] items-center justify-center">
       <Card className="w-full max-w-xl">
@@ -32,4 +27,5 @@ export default function ErrorPage({ error, reset }: ErrorPageProps) {
       </Card>
     </div>
   );
-}
+};
+export default ErrorPage;

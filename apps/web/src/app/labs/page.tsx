@@ -1,12 +1,10 @@
-import { ArrowRight, FlaskConical } from 'lucide-react';
+import { FlaskConical } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
-
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
 import { LAB_REGISTRY } from '@/config/lab-registry';
-
-export default function LabsPage() {
+export const LabsPage = () => {
   return (
     <main className="min-h-dvh w-full px-5 py-10 sm:py-14 lg:px-8 lg:py-20">
       <div className="mx-auto w-full max-w-7xl">
@@ -69,7 +67,7 @@ export default function LabsPage() {
           {LAB_REGISTRY.map((lab) => {
             return (
               <Link key={lab.slug} className="group outline-none" href={lab.route}>
-                <Card className="h-full overflow-hidden border-border/80 bg-gradient-to-b from-accent/40 to-card shadow-none transition-[border-color,transform,box-shadow] duration-200 group-hover:-translate-y-0.5 group-hover:border-primary/35 group-hover:shadow-md group-focus-visible:ring-2 group-focus-visible:ring-ring">
+                <Card className="h-full overflow-hidden border-border/80 bg-gradient-to-b from-accent/40 to-card shadow-none transition-[border-color,transform,box-shadow] duration-300 ease-out group-hover:border-primary/30 group-hover:shadow-lg group-focus-visible:ring-2 group-focus-visible:ring-ring motion-safe:group-hover:-translate-y-1 motion-reduce:transition-none">
                   <CardContent className="flex min-h-64 flex-col p-5">
                     <div className="flex items-start gap-3">
                       <span className="flex size-9 shrink-0 items-center justify-center rounded-lg border bg-background text-primary shadow-sm">
@@ -81,16 +79,11 @@ export default function LabsPage() {
                       </div>
                     </div>
                     <p className="mt-5 line-clamp-3 text-sm leading-6 text-muted-foreground">{lab.description}</p>
-                    <div className="mt-auto flex items-center justify-between gap-3 pt-6">
-                      <div className="flex items-center gap-2">
-                        <Badge variant="secondary">{lab.difficulty}</Badge>
-                        <Badge variant="outline">{lab.status}</Badge>
+                    {lab.status === 'building' && (
+                      <div className="mt-auto pt-6">
+                        <Badge variant="secondary">开发中</Badge>
                       </div>
-                      <span className="inline-flex items-center gap-1.5 text-xs font-medium text-primary">
-                        进入实验
-                        <ArrowRight aria-hidden className="size-3.5 transition-transform group-hover:translate-x-0.5" />
-                      </span>
-                    </div>
+                    )}
                   </CardContent>
                 </Card>
               </Link>
@@ -100,4 +93,5 @@ export default function LabsPage() {
       </div>
     </main>
   );
-}
+};
+export default LabsPage;

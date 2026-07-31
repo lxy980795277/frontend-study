@@ -6,21 +6,17 @@ import type {
   BenchmarkExecutionResult,
   IsolatedBenchmarkConfiguration,
   IsolatedBenchmarkReport,
-} from './types';
-
-export function createVisibleContentHash(value: string): string {
+} from '@/labs/markdown-stream-rendering/types/benchmark';
+export const createVisibleContentHash = (value: string): string => {
   const normalized = value.replace(/\s+/gu, ' ').trim();
-
   return createSignature(normalized).toString(36);
-}
-
-export function createBenchmarkConsistency(results: readonly BenchmarkExecutionResult[]): BenchmarkConsistency {
+};
+export const createBenchmarkConsistency = (results: readonly BenchmarkExecutionResult[]): BenchmarkConsistency => {
   const legacyHashes = getUniqueHashes(results, 'legacy');
   const incrementalHashes = getUniqueHashes(results, 'incremental');
   const allLengthsMatch = results.every((result) => {
     return result.contentMatchesExpectedLength;
   });
-
   return {
     incrementalHashes,
     legacyHashes,
@@ -31,15 +27,14 @@ export function createBenchmarkConsistency(results: readonly BenchmarkExecutionR
       incrementalHashes.length === 1 &&
       legacyHashes[0] === incrementalHashes[0],
   };
-}
-
-export function createIsolatedBenchmarkReport(
+};
+export const createIsolatedBenchmarkReport = (
   configuration: IsolatedBenchmarkConfiguration,
   results: readonly BenchmarkExecutionResult[],
   environment: BenchmarkEnvironment,
   status: IsolatedBenchmarkReport['status'],
   generatedAt = new Date().toISOString(),
-): IsolatedBenchmarkReport {
+): IsolatedBenchmarkReport => {
   return {
     configuration,
     consistency: createBenchmarkConsistency(results),
@@ -53,9 +48,8 @@ export function createIsolatedBenchmarkReport(
       legacy: summarizeRenderer(results, 'legacy'),
     },
   };
-}
-
-export function readBenchmarkEnvironment(): BenchmarkEnvironment {
+};
+export const readBenchmarkEnvironment = (): BenchmarkEnvironment => {
   if (typeof navigator === 'undefined') {
     return {
       deviceMemoryGb: null,
@@ -63,22 +57,19 @@ export function readBenchmarkEnvironment(): BenchmarkEnvironment {
       userAgent: '',
     };
   }
-
   const navigatorWithMemory = navigator as Navigator & {
     deviceMemory?: number;
   };
-
   return {
     deviceMemoryGb: navigatorWithMemory.deviceMemory ?? null,
     hardwareConcurrency: navigator.hardwareConcurrency || null,
     userAgent: navigator.userAgent,
   };
-}
-
-function getUniqueHashes(
+};
+const getUniqueHashes = (
   results: readonly BenchmarkExecutionResult[],
   renderer: BenchmarkExecutionResult['execution']['renderer'],
-): string[] {
+): string[] => {
   return [
     ...new Set(
       results
@@ -90,4 +81,4 @@ function getUniqueHashes(
         }),
     ),
   ].sort();
-}
+};

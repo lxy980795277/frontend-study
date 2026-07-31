@@ -1,24 +1,19 @@
 import { MarkdownMetricsCollector } from '../collector';
-
 describe('MarkdownMetricsCollector', () => {
   it('measures only the active run window and freezes elapsed time on finish', () => {
     let now = 100;
     vi.spyOn(performance, 'now').mockImplementation(() => {
       return now;
     });
-
     const collector = new MarkdownMetricsCollector();
     expect(collector.snapshot().elapsedMs).toBe(0);
-
     collector.start();
     now = 145;
     expect(collector.snapshot().elapsedMs).toBe(45);
-
     collector.finish();
     now = 300;
     expect(collector.snapshot().elapsedMs).toBe(45);
   });
-
   it('keeps main-thread, Worker and patch metrics in separate fields', () => {
     const collector = new MarkdownMetricsCollector();
     collector.recordLegacy({ mainMs: 8 });
@@ -30,9 +25,7 @@ describe('MarkdownMetricsCollector', () => {
       patchOps: ['tailAppendText', 'tailAppendFallbackHtml'],
       usedSnapshotFallback: false,
     });
-
     const snapshot = collector.snapshot();
-
     expect(snapshot.legacy.mainTotalMs).toBe(8);
     expect(snapshot.incremental.mainTotalMs).toBe(3);
     expect(snapshot.incremental.applyMs).toBe(2);

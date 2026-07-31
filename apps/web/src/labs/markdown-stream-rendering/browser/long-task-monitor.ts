@@ -1,21 +1,11 @@
-import type { BenchmarkLongTaskSummary } from '../benchmark/types';
+import type { LongTaskEntry, LongTaskMonitor } from '../types/browser';
 
-interface LongTaskEntry {
-  duration: number;
-}
-
-export interface LongTaskMonitor {
-  finish: () => BenchmarkLongTaskSummary;
-}
-
-export function startLongTaskMonitor(): LongTaskMonitor {
+export const startLongTaskMonitor = (): LongTaskMonitor => {
   if (typeof PerformanceObserver === 'undefined') {
     return createUnsupportedMonitor();
   }
-
   const durations: number[] = [];
   let observer: PerformanceObserver;
-
   try {
     observer = new PerformanceObserver((list) => {
       list.getEntries().forEach((entry) => {
@@ -28,14 +18,12 @@ export function startLongTaskMonitor(): LongTaskMonitor {
   } catch {
     return createUnsupportedMonitor();
   }
-
   return {
     finish: () => {
       observer.takeRecords().forEach((entry: LongTaskEntry) => {
         durations.push(entry.duration);
       });
       observer.disconnect();
-
       return {
         count: durations.length,
         maxMs: durations.length === 0 ? 0 : Math.max(...durations),
@@ -46,9 +34,8 @@ export function startLongTaskMonitor(): LongTaskMonitor {
       };
     },
   };
-}
-
-function createUnsupportedMonitor(): LongTaskMonitor {
+};
+const createUnsupportedMonitor = (): LongTaskMonitor => {
   return {
     finish: () => {
       return {
@@ -59,4 +46,4 @@ function createUnsupportedMonitor(): LongTaskMonitor {
       };
     },
   };
-}
+};

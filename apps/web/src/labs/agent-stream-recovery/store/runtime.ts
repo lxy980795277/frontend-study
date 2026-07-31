@@ -1,28 +1,7 @@
-import type { LabRunAgentInput } from '@frontend-study/shared-types';
 import { create } from 'zustand';
-
-import {
-  createIdleRuntime,
-  reduceStreamRuntime,
-  type StreamRuntimeAction,
-  type StreamRuntimeState,
-} from '../core/stream-state-machine';
-
-export interface RuntimeEntry extends StreamRuntimeState {
-  input: LabRunAgentInput | null;
-  lastHeartbeatAt: number | null;
-}
-
-interface RuntimeStoreState {
-  runtimeByThreadId: Record<string, RuntimeEntry>;
-}
-
-interface RuntimeStoreActions {
-  dispatch: (threadId: string, action: StreamRuntimeAction) => void;
-  reset: (threadId: string) => void;
-  setHeartbeat: (threadId: string, timestamp: number) => void;
-  setInput: (threadId: string, input: LabRunAgentInput) => void;
-}
+import { createIdleRuntime, reduceStreamRuntime } from '../core/stream-state-machine';
+import type { RuntimeEntry } from '../types/runtime';
+import type { RuntimeStoreActions, RuntimeStoreState } from '../types/store';
 
 export const createIdleRuntimeEntry = (): RuntimeEntry => {
   return {
@@ -31,7 +10,6 @@ export const createIdleRuntimeEntry = (): RuntimeEntry => {
     lastHeartbeatAt: null,
   };
 };
-
 export const useAgentRuntimeStore = create<RuntimeStoreActions & RuntimeStoreState>((set) => {
   return {
     dispatch: (threadId, action) => {

@@ -1,8 +1,8 @@
 import { applyPatchResult, RevisionConflictError } from '../apply-patches';
-import type { PatchResult } from '../../core/patch/types';
-
-const passthrough = (html: string): string => html;
-
+import type { PatchResult } from '@/labs/markdown-stream-rendering/types/markdown';
+const passthrough = (html: string): string => {
+  return html;
+};
 const initialResult: PatchResult = {
   baseRevision: 0,
   metrics: { diffMs: 0, parseMs: 0 },
@@ -26,14 +26,12 @@ const initialResult: PatchResult = {
   rendererId: 'renderer',
   reqId: 1,
 };
-
 describe('applyPatchResult', () => {
   it('keeps Markdown content separate from React tools during tail append', () => {
     const container = document.createElement('div');
     applyPatchResult(container, initialResult, passthrough);
     const tools = container.querySelector('.msr-tools');
     tools?.append(document.createElement('button'));
-
     applyPatchResult(
       container,
       {
@@ -63,25 +61,21 @@ describe('applyPatchResult', () => {
       },
       passthrough,
     );
-
     expect(container.querySelector('.msr-content')?.textContent).toBe('bold tail');
     expect(container.querySelector('.msr-tools')?.textContent).toBe('');
   });
-
   it('treats the same next revision as an idempotent no-op', () => {
     const container = document.createElement('div');
     applyPatchResult(container, initialResult, passthrough);
-
     const repeated = applyPatchResult(container, initialResult, passthrough);
-
     expect(repeated.changedBlocks).toHaveLength(0);
     expect(container.querySelectorAll('.msr-block')).toHaveLength(1);
   });
-
   it('rejects a revision that does not match the DOM baseline', () => {
     const container = document.createElement('div');
     container.dataset.revision = '4';
-
-    expect(() => applyPatchResult(container, initialResult, passthrough)).toThrow(RevisionConflictError);
+    expect(() => {
+      return applyPatchResult(container, initialResult, passthrough);
+    }).toThrow(RevisionConflictError);
   });
 });

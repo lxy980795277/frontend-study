@@ -1,7 +1,5 @@
 'use client';
-
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-
 import { createBenchmarkPlan } from '../benchmark/plan';
 import { createIsolatedBenchmarkReport, readBenchmarkEnvironment } from '../benchmark/report';
 import {
@@ -19,16 +17,17 @@ import type {
   IsolatedBenchmarkConfiguration,
   IsolatedBenchmarkPhase,
   IsolatedBenchmarkReport,
-} from '../benchmark/types';
-import type { LongTaskMonitor } from '../browser/long-task-monitor';
-import type { PatchResult } from '../core/patch/types';
+  CommitWaiter,
+  IsolatedBenchmarkController,
+} from '@/labs/markdown-stream-rendering/types/benchmark';
+import type { LongTaskMonitor } from '../types/browser';
+import type { PatchResult } from '@/labs/markdown-stream-rendering/types/markdown';
 import { MARKDOWN_FIXTURES } from '../fixtures/fixtures';
 import type { DeterministicStreamer } from '../fixtures/streamer';
 import { MarkdownMetricsCollector } from '../metrics/collector';
 import { createEmptyMetricsSnapshot } from '../metrics/empty';
-import type { IncrementalSample, LegacySample, RunMetricsSnapshot, RuntimeStatus } from '../metrics/types';
-import { useBenchmarkBaseline, type BenchmarkLoadStatus } from './use-benchmark-baseline';
-
+import type { IncrementalSample, LegacySample, RuntimeStatus } from '@/labs/markdown-stream-rendering/types/renderer';
+import { useBenchmarkBaseline } from './use-benchmark-baseline';
 const DEFAULT_CONFIGURATION: IsolatedBenchmarkConfiguration = {
   chunkRange: [12, 32],
   fixtureId: 'mixed',
@@ -36,62 +35,9 @@ const DEFAULT_CONFIGURATION: IsolatedBenchmarkConfiguration = {
   instanceCount: 1,
   mode: 'char',
   roundCount: 2,
-  seed: 5_005,
+  seed: 5005,
 };
-interface CommitWaiter {
-  reject: (reason: Error) => void;
-  resolve: (commit: BenchmarkRendererCommit) => void;
-  timeoutId: number;
-}
-
-export interface IsolatedBenchmarkBaseline {
-  codeBlockCount: number;
-  copyCount: number;
-  errorMessage: string;
-  sourceCharacters: number;
-  status: BenchmarkLoadStatus;
-  totalCharacters: number;
-}
-
-export interface IsolatedBenchmarkState {
-  activeExecution: BenchmarkActiveExecution | null;
-  activeFixture: (typeof MARKDOWN_FIXTURES)[number];
-  baseline: IsolatedBenchmarkBaseline;
-  completedExecutions: number;
-  configuration: IsolatedBenchmarkConfiguration;
-  content: string;
-  errorMessage: string;
-  isRunning: boolean;
-  metrics: RunMetricsSnapshot;
-  phase: IsolatedBenchmarkPhase;
-  report: IsolatedBenchmarkReport | null;
-  results: BenchmarkExecutionResult[];
-  totalExecutions: number;
-}
-
-export interface IsolatedBenchmarkActions {
-  onCoalescedFrame: () => void;
-  onCommit: (commit: BenchmarkRendererCommit) => void;
-  onIncrementalSample: (sample: IncrementalSample) => void;
-  onLegacySample: (sample: LegacySample) => void;
-  onPatch: (result: PatchResult) => void;
-  onRuntimeStatus: (status: RuntimeStatus) => void;
-  onWorkerRequest: () => void;
-  retryBaseline: () => void;
-  setFixture: (fixtureId: string) => void;
-  setFps: (fps: number) => void;
-  setRoundCount: (roundCount: number) => void;
-  setSplitMode: (mode: IsolatedBenchmarkConfiguration['mode']) => void;
-  start: () => void;
-  stop: () => void;
-}
-
-export interface IsolatedBenchmarkController {
-  actions: IsolatedBenchmarkActions;
-  state: IsolatedBenchmarkState;
-}
-
-export function useIsolatedBenchmark(): IsolatedBenchmarkController {
+export const useIsolatedBenchmark = (): IsolatedBenchmarkController => {
   const benchmarkBaseline = useBenchmarkBaseline();
   const [configuration, setConfiguration] = useState(DEFAULT_CONFIGURATION);
   const [activeExecution, setActiveExecution] = useState<BenchmarkActiveExecution | null>(null);
@@ -103,7 +49,6 @@ export function useIsolatedBenchmark(): IsolatedBenchmarkController {
   const [metrics, setMetrics] = useState(createEmptyMetricsSnapshot);
   const [completedExecutions, setCompletedExecutions] = useState(0);
   const [totalExecutions, setTotalExecutions] = useState(0);
-
   const collectorRef = useRef(new MarkdownMetricsCollector());
   const commitWaitersRef = useRef(new Map<number, CommitWaiter>());
   const committedFrameLengthsRef = useRef(new Set<number>());
@@ -117,17 +62,18 @@ export function useIsolatedBenchmark(): IsolatedBenchmarkController {
   const settleCancelRef = useRef<(() => void) | null>(null);
   const streamerRef = useRef<DeterministicStreamer | null>(null);
   const runtimeModeRef = useRef<RuntimeStatus['mode']>('incremental');
-
   const activeFixture = useMemo(() => {
-    return MARKDOWN_FIXTURES.find((fixture) => fixture.id === configuration.fixtureId) ?? MARKDOWN_FIXTURES[0];
+    return (
+      MARKDOWN_FIXTURES.find((fixture) => {
+        return fixture.id === configuration.fixtureId;
+      }) ?? MARKDOWN_FIXTURES[0]
+    );
   }, [configuration.fixtureId]);
   const isRunning = isActiveBenchmarkPhase(phase);
-
   const transitionPhase = useCallback((nextPhase: IsolatedBenchmarkPhase) => {
     phaseRef.current = nextPhase;
     setPhase(nextPhase);
   }, []);
-
   const cancelPendingWork = useCallback(() => {
     streamerRef.current?.pause();
     streamerRef.current = null;
@@ -141,14 +87,12 @@ export function useIsolatedBenchmark(): IsolatedBenchmarkController {
     });
     commitWaitersRef.current.clear();
   }, []);
-
   const waitForCommit = useCallback((contentLength: number, timeoutMs: number) => {
     return new Promise<BenchmarkRendererCommit>((resolve, reject) => {
       const timeoutId = window.setTimeout(() => {
         commitWaitersRef.current.delete(contentLength);
         reject(new Error(`等待 ${String(contentLength)} 字符的最终 DOM Commit 超时。`));
       }, timeoutMs);
-
       commitWaitersRef.current.set(contentLength, {
         reject,
         resolve,
@@ -156,62 +100,51 @@ export function useIsolatedBenchmark(): IsolatedBenchmarkController {
       });
     });
   }, []);
-
   const onCommit = useCallback((commit: BenchmarkRendererCommit) => {
     const emittedAt = emittedFramesRef.current.get(commit.contentLength);
-
     if (phaseRef.current === 'measuring' && emittedAt !== undefined) {
       if (!committedFrameLengthsRef.current.has(commit.contentLength)) {
         committedFrameLengthsRef.current.add(commit.contentLength);
         frameLatenciesRef.current.push(commit.committedAt - emittedAt);
       }
     }
-
     const waiter = commitWaitersRef.current.get(commit.contentLength);
     if (!waiter) {
       return;
     }
-
     window.clearTimeout(waiter.timeoutId);
     commitWaitersRef.current.delete(commit.contentLength);
     waiter.resolve(commit);
   }, []);
-
   const onLegacySample = useCallback((sample: LegacySample) => {
     if (phaseRef.current === 'measuring') {
       collectorRef.current.recordLegacy(sample);
     }
   }, []);
-
   const onIncrementalSample = useCallback((sample: IncrementalSample) => {
     if (phaseRef.current === 'measuring') {
       collectorRef.current.recordIncremental(sample);
     }
   }, []);
-
   const onWorkerRequest = useCallback(() => {
     if (phaseRef.current === 'measuring') {
       collectorRef.current.recordWorkerRequest();
     }
   }, []);
-
   const onCoalescedFrame = useCallback(() => {
     if (phaseRef.current === 'measuring') {
       collectorRef.current.recordCoalescedFrame();
     }
   }, []);
-
   const onRuntimeStatus = useCallback((status: RuntimeStatus) => {
     if (phaseRef.current === 'measuring' && runtimeModeRef.current !== 'fallback' && status.mode === 'fallback') {
       collectorRef.current.recordRuntimeFallback();
     }
     runtimeModeRef.current = status.mode;
   }, []);
-
   const onPatch = useCallback((_result: PatchResult) => {
     return undefined;
   }, []);
-
   const runPlan = useCallback(
     async (
       token: number,
@@ -270,7 +203,6 @@ export function useIsolatedBenchmark(): IsolatedBenchmarkController {
             token,
             waitForCommit,
           });
-
           assertActiveRun(token, runTokenRef.current);
           streamerRef.current = null;
           longTaskMonitorRef.current = null;
@@ -278,7 +210,6 @@ export function useIsolatedBenchmark(): IsolatedBenchmarkController {
           setActiveExecution(null);
           await waitForBrowserSettle(settleCancelRef);
         }
-
         assertActiveRun(token, runTokenRef.current);
         const completedReport = createIsolatedBenchmarkReport(
           runConfiguration,
@@ -292,7 +223,6 @@ export function useIsolatedBenchmark(): IsolatedBenchmarkController {
         if (cause instanceof BenchmarkCancelledError || token !== runTokenRef.current) {
           return;
         }
-
         const nextMessage = cause instanceof Error ? cause.message : '隔离基准运行失败。';
         setErrorMessage(nextMessage);
         transitionPhase('error');
@@ -302,12 +232,10 @@ export function useIsolatedBenchmark(): IsolatedBenchmarkController {
     },
     [benchmarkBaseline.baseline, cancelPendingWork, transitionPhase, waitForCommit],
   );
-
   const start = useCallback(() => {
     if (benchmarkBaseline.status !== 'ready' || isActiveBenchmarkPhase(phaseRef.current)) {
       return;
     }
-
     cancelPendingWork();
     const token = runTokenRef.current + 1;
     runTokenRef.current = token;
@@ -322,15 +250,12 @@ export function useIsolatedBenchmark(): IsolatedBenchmarkController {
     setErrorMessage('');
     setCompletedExecutions(0);
     setTotalExecutions(plan.executions.length);
-
     void runPlan(token, runConfiguration, plan.executions, activeFixture.content);
   }, [activeFixture, benchmarkBaseline.status, cancelPendingWork, configuration, runPlan]);
-
   const stop = useCallback(() => {
     if (!isActiveBenchmarkPhase(phaseRef.current)) {
       return;
     }
-
     runTokenRef.current += 1;
     cancelPendingWork();
     setActiveExecution(null);
@@ -343,13 +268,13 @@ export function useIsolatedBenchmark(): IsolatedBenchmarkController {
     setReport(stoppedReport);
     transitionPhase('stopped');
   }, [cancelPendingWork, configuration, transitionPhase]);
-
   const setFixture = useCallback((fixtureId: string) => {
-    const fixture = MARKDOWN_FIXTURES.find((candidate) => candidate.id === fixtureId);
+    const fixture = MARKDOWN_FIXTURES.find((candidate) => {
+      return candidate.id === fixtureId;
+    });
     if (!fixture || isActiveBenchmarkPhase(phaseRef.current)) {
       return;
     }
-
     setConfiguration((current) => {
       return {
         ...current,
@@ -358,7 +283,6 @@ export function useIsolatedBenchmark(): IsolatedBenchmarkController {
       };
     });
   }, []);
-
   const setFps = useCallback((fps: number) => {
     if (isActiveBenchmarkPhase(phaseRef.current)) {
       return;
@@ -370,7 +294,6 @@ export function useIsolatedBenchmark(): IsolatedBenchmarkController {
       };
     });
   }, []);
-
   const setSplitMode = useCallback((mode: IsolatedBenchmarkConfiguration['mode']) => {
     if (isActiveBenchmarkPhase(phaseRef.current)) {
       return;
@@ -382,7 +305,6 @@ export function useIsolatedBenchmark(): IsolatedBenchmarkController {
       };
     });
   }, []);
-
   const setRoundCount = useCallback((roundCount: number) => {
     if (isActiveBenchmarkPhase(phaseRef.current)) {
       return;
@@ -394,26 +316,22 @@ export function useIsolatedBenchmark(): IsolatedBenchmarkController {
       };
     });
   }, []);
-
   useEffect(() => {
     const timer = window.setInterval(() => {
       if (phaseRef.current === 'measuring') {
         setMetrics(collectorRef.current.snapshot());
       }
     }, 200);
-
     return () => {
       window.clearInterval(timer);
     };
   }, []);
-
   useEffect(() => {
     return () => {
       runTokenRef.current += 1;
       cancelPendingWork();
     };
   }, [cancelPendingWork]);
-
   return {
     actions: {
       onCoalescedFrame,
@@ -454,4 +372,4 @@ export function useIsolatedBenchmark(): IsolatedBenchmarkController {
       totalExecutions,
     },
   };
-}
+};

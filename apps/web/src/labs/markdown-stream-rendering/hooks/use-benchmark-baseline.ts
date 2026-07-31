@@ -1,33 +1,18 @@
 'use client';
 
 import { useCallback, useEffect, useState } from 'react';
+import type { BenchmarkBaselineState } from '../types/benchmark';
+import type { BenchmarkInspection } from '../types/fixture';
 
-import {
-  BENCHMARK_COPY_COUNT,
-  createBenchmarkBaseline,
-  inspectBenchmarkMarkdown,
-  type BenchmarkInspection,
-} from '../fixtures/benchmark';
+import { BENCHMARK_COPY_COUNT, createBenchmarkBaseline, inspectBenchmarkMarkdown } from '../fixtures/benchmark';
 import { BenchmarkLoadError, loadBenchmarkMarkdown } from '../services/benchmark';
 
-export type BenchmarkLoadStatus = 'error' | 'loading' | 'ready';
-
-export interface BenchmarkBaselineState {
-  baseline: string;
-  copyCount: number;
-  error: BenchmarkLoadError | null;
-  inspection: BenchmarkInspection | null;
-  retry: () => void;
-  status: BenchmarkLoadStatus;
-}
-
-export function useBenchmarkBaseline(): BenchmarkBaselineState {
+export const useBenchmarkBaseline = (): BenchmarkBaselineState => {
   const [attempt, setAttempt] = useState(0);
   const [baseline, setBaseline] = useState('');
   const [error, setError] = useState<BenchmarkLoadError | null>(null);
   const [inspection, setInspection] = useState<BenchmarkInspection | null>(null);
-  const [status, setStatus] = useState<BenchmarkLoadStatus>('loading');
-
+  const [status, setStatus] = useState<BenchmarkBaselineState['status']>('loading');
   const retry = useCallback(() => {
     setStatus('loading');
     setError(null);
@@ -35,19 +20,15 @@ export function useBenchmarkBaseline(): BenchmarkBaselineState {
       return current + 1;
     });
   }, []);
-
   useEffect(() => {
     const abortController = new AbortController();
-
     void loadBenchmarkMarkdown(abortController.signal)
       .then((source) => {
         const nextInspection = inspectBenchmarkMarkdown(source);
         const nextBaseline = createBenchmarkBaseline(source);
-
         if (abortController.signal.aborted) {
           return;
         }
-
         setBaseline(nextBaseline);
         setInspection(nextInspection);
         setStatus('ready');
@@ -56,7 +37,6 @@ export function useBenchmarkBaseline(): BenchmarkBaselineState {
         if (abortController.signal.aborted) {
           return;
         }
-
         const nextError =
           cause instanceof BenchmarkLoadError
             ? cause
@@ -66,12 +46,10 @@ export function useBenchmarkBaseline(): BenchmarkBaselineState {
         setError(nextError);
         setStatus('error');
       });
-
     return () => {
       abortController.abort();
     };
   }, [attempt]);
-
   return {
     baseline,
     copyCount: BENCHMARK_COPY_COUNT,
@@ -80,4 +58,4 @@ export function useBenchmarkBaseline(): BenchmarkBaselineState {
     retry,
     status,
   };
-}
+};

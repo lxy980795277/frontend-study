@@ -1,9 +1,7 @@
 import { ArrowRight, FlaskConical } from 'lucide-react';
 import Link from 'next/link';
 import type { FC } from 'react';
-
 import { Button } from '@/components/ui/button';
-
 export const HomeHeader: FC = () => {
   return (
     <header className="border-b bg-background/85 backdrop-blur">

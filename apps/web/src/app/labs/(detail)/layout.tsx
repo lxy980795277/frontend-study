@@ -1,14 +1,11 @@
 import { ArrowLeft } from 'lucide-react';
 import Link from 'next/link';
 import type { ReactNode } from 'react';
-
 import { Button } from '@/components/ui/button';
-
 interface LabDetailLayoutProps {
   children: ReactNode;
 }
-
-export default function LabDetailLayout({ children }: LabDetailLayoutProps) {
+export const LabDetailLayout = ({ children }: LabDetailLayoutProps) => {
   return (
     <div className="relative min-h-dvh [&>main]:px-5 [&>main]:py-5 sm:[&>main]:px-6 sm:[&>main]:py-6 lg:[&>main]:px-8 lg:[&>main]:py-7">
       <nav
@@ -25,4 +22,5 @@ export default function LabDetailLayout({ children }: LabDetailLayoutProps) {
       {children}
     </div>
   );
-}
+};
+export default LabDetailLayout;

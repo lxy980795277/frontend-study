@@ -7,7 +7,6 @@ export interface LabDefinition {
   status: 'planned' | 'building' | 'ready';
   title: string;
 }
-
 export const LAB_REGISTRY: readonly LabDefinition[] = [
   {
     category: 'AI Streaming',
@@ -26,5 +25,14 @@ export const LAB_REGISTRY: readonly LabDefinition[] = [
     slug: 'markdown-stream-rendering',
     status: 'ready',
     title: 'Markdown 流式增量渲染',
+  },
+  {
+    category: 'Data-intensive UI',
+    description: '以百万行 × 100 列验证二维虚拟化、Canvas、OffscreenCanvas 与安全降级。',
+    difficulty: 'expert',
+    route: '/labs/large-data-grid',
+    slug: 'large-data-grid',
+    status: 'building',
+    title: '大数据表格离屏渲染',
   },
 ];

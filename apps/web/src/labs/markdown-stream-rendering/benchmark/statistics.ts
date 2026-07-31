@@ -4,8 +4,7 @@ import type {
   BenchmarkLongTaskSummary,
   BenchmarkRenderer,
   BenchmarkRendererSummary,
-} from './types';
-
+} from '@/labs/markdown-stream-rendering/types/benchmark';
 const EMPTY_LATENCY: BenchmarkLatencySummary = {
   averageMs: 0,
   maxMs: 0,
@@ -13,26 +12,22 @@ const EMPTY_LATENCY: BenchmarkLatencySummary = {
   p95Ms: 0,
   sampleCount: 0,
 };
-
 const EMPTY_LONG_TASKS: BenchmarkLongTaskSummary = {
   count: 0,
   maxMs: 0,
   supported: false,
   totalMs: 0,
 };
-
-export function summarizeLatency(values: readonly number[]): BenchmarkLatencySummary {
+export const summarizeLatency = (values: readonly number[]): BenchmarkLatencySummary => {
   if (values.length === 0) {
     return EMPTY_LATENCY;
   }
-
   const sorted = [...values].sort((left, right) => {
     return left - right;
   });
   const total = sorted.reduce((sum, value) => {
     return sum + value;
   }, 0);
-
   return {
     averageMs: total / sorted.length,
     maxMs: sorted.at(-1) ?? 0,
@@ -40,12 +35,11 @@ export function summarizeLatency(values: readonly number[]): BenchmarkLatencySum
     p95Ms: percentile(sorted, 0.95),
     sampleCount: sorted.length,
   };
-}
-
-export function summarizeRenderer(
+};
+export const summarizeRenderer = (
   results: readonly BenchmarkExecutionResult[],
   renderer: BenchmarkRenderer,
-): BenchmarkRendererSummary {
+): BenchmarkRendererSummary => {
   const rendererResults = results.filter((result) => {
     return result.execution.renderer === renderer;
   });
@@ -64,7 +58,6 @@ export function summarizeRenderer(
   const mainCommits = rendererResults.reduce((total, result) => {
     return total + getMainCommits(result, renderer);
   }, 0);
-
   return {
     coalescedFrames: rendererResults.reduce((total, result) => {
       return total + result.metrics.incremental.coalescedFrames;
@@ -90,13 +83,11 @@ export function summarizeRenderer(
       return total + result.metrics.incremental.workerRequests;
     }, 0),
   };
-}
-
-export function summarizeLongTasks(summaries: readonly BenchmarkLongTaskSummary[]): BenchmarkLongTaskSummary {
+};
+export const summarizeLongTasks = (summaries: readonly BenchmarkLongTaskSummary[]): BenchmarkLongTaskSummary => {
   if (summaries.length === 0) {
     return EMPTY_LONG_TASKS;
   }
-
   return {
     count: summaries.reduce((total, summary) => {
       return total + summary.count;
@@ -111,39 +102,31 @@ export function summarizeLongTasks(summaries: readonly BenchmarkLongTaskSummary[
       return total + summary.totalMs;
     }, 0),
   };
-}
-
-function percentile(sortedValues: readonly number[], quantile: number): number {
+};
+const percentile = (sortedValues: readonly number[], quantile: number): number => {
   if (sortedValues.length === 0) {
     return 0;
   }
-
   const rank = Math.ceil(quantile * sortedValues.length) - 1;
   const index = Math.min(sortedValues.length - 1, Math.max(0, rank));
-
   return sortedValues[index] ?? 0;
-}
-
-function average(values: readonly number[]): number {
+};
+const average = (values: readonly number[]): number => {
   if (values.length === 0) {
     return 0;
   }
-
   return (
     values.reduce((total, value) => {
       return total + value;
     }, 0) / values.length
   );
-}
-
-function getMainTotal(result: BenchmarkExecutionResult, renderer: BenchmarkRenderer): number {
+};
+const getMainTotal = (result: BenchmarkExecutionResult, renderer: BenchmarkRenderer): number => {
   return renderer === 'legacy' ? result.metrics.legacy.mainTotalMs : result.metrics.incremental.mainTotalMs;
-}
-
-function getMainMax(result: BenchmarkExecutionResult, renderer: BenchmarkRenderer): number {
+};
+const getMainMax = (result: BenchmarkExecutionResult, renderer: BenchmarkRenderer): number => {
   return renderer === 'legacy' ? result.metrics.legacy.mainMaxMs : result.metrics.incremental.mainMaxMs;
-}
-
-function getMainCommits(result: BenchmarkExecutionResult, renderer: BenchmarkRenderer): number {
+};
+const getMainCommits = (result: BenchmarkExecutionResult, renderer: BenchmarkRenderer): number => {
   return renderer === 'legacy' ? result.metrics.legacy.commits : result.metrics.incremental.commits;
-}
+};

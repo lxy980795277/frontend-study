@@ -1,7 +1,5 @@
 import type { ComponentProps, FC } from 'react';
-
 import { cn } from '@/utils/cn';
-
 export const Input: FC<ComponentProps<'input'>> = ({ className, type, ...props }) => {
   return (
     <input

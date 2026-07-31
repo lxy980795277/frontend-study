@@ -1,11 +1,9 @@
 import type { BenchmarkLoadError } from '../benchmark';
 import { loadBenchmarkMarkdown } from '../benchmark';
-
 describe('loadBenchmarkMarkdown', () => {
   afterEach(() => {
     vi.unstubAllGlobals();
   });
-
   it('loads the static Markdown source as text', async () => {
     const fetchMock = vi.fn().mockResolvedValue(
       new Response('# Benchmark', {
@@ -16,7 +14,6 @@ describe('loadBenchmarkMarkdown', () => {
       }),
     );
     vi.stubGlobal('fetch', fetchMock);
-
     await expect(loadBenchmarkMarkdown()).resolves.toBe('# Benchmark');
     expect(fetchMock).toHaveBeenCalledWith(
       '/fixtures/markdown-stream-rendering/llm-benchmark.md',
@@ -25,7 +22,6 @@ describe('loadBenchmarkMarkdown', () => {
       }),
     );
   });
-
   it('returns a stable retryable error for a failed static asset request', async () => {
     vi.stubGlobal(
       'fetch',
@@ -36,7 +32,6 @@ describe('loadBenchmarkMarkdown', () => {
         }),
       ),
     );
-
     await expect(loadBenchmarkMarkdown()).rejects.toEqual(
       expect.objectContaining<Partial<BenchmarkLoadError>>({
         name: 'BenchmarkLoadError',

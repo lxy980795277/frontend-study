@@ -1,43 +1,21 @@
-import type { ThreadDetail, ThreadSummary, UserMessage } from '@frontend-study/shared-types';
+import type { ThreadSummary } from '@frontend-study/shared-types';
 import { create } from 'zustand';
-
-import type { ReceivedAgentStreamEvent } from '@/services/agent-stream';
-
 import {
   applyAgentStreamEvent,
   appendOptimisticUserMessage,
   createEmptyProjection,
   createProjectionFromHistory,
-  type ConversationProjection,
 } from '../core/ag-ui-event-reducer';
-
-type LoadStatus = 'error' | 'idle' | 'loading' | 'ready';
-
-interface ThreadStoreState {
-  activeThreadId: string | null;
-  detailStatusByThreadId: Record<string, LoadStatus>;
-  listStatus: LoadStatus;
-  projectionByThreadId: Record<string, ConversationProjection>;
-  threadOrder: string[];
-  threadsById: Record<string, ThreadSummary>;
-}
-
-interface ThreadStoreActions {
-  applyStreamEvent: (threadId: string, received: ReceivedAgentStreamEvent) => void;
-  appendUserMessage: (threadId: string, message: UserMessage) => void;
-  hydrateThread: (detail: ThreadDetail) => void;
-  removeThread: (threadId: string) => void;
-  setActiveThreadId: (threadId: string | null) => void;
-  setDetailStatus: (threadId: string, status: LoadStatus) => void;
-  setThreadList: (threads: ThreadSummary[]) => void;
-  setListStatus: (status: LoadStatus) => void;
-  upsertThread: (thread: ThreadSummary) => void;
-}
+import type { ThreadStoreActions, ThreadStoreState } from '../types/store';
 
 const upsertOrder = (order: string[], threadId: string): string[] => {
-  return [threadId, ...order.filter((id) => id !== threadId)];
+  return [
+    threadId,
+    ...order.filter((id) => {
+      return id !== threadId;
+    }),
+  ];
 };
-
 export const useAgentThreadStore = create<ThreadStoreActions & ThreadStoreState>((set) => {
   return {
     activeThreadId: null,
@@ -107,7 +85,9 @@ export const useAgentThreadStore = create<ThreadStoreActions & ThreadStoreState>
           activeThreadId: state.activeThreadId === threadId ? null : state.activeThreadId,
           detailStatusByThreadId,
           projectionByThreadId,
-          threadOrder: state.threadOrder.filter((id) => id !== threadId),
+          threadOrder: state.threadOrder.filter((id) => {
+            return id !== threadId;
+          }),
           threadsById,
         };
       });
@@ -136,7 +116,9 @@ export const useAgentThreadStore = create<ThreadStoreActions & ThreadStoreState>
         });
         return {
           listStatus: 'ready',
-          threadOrder: threads.map((thread) => thread.id),
+          threadOrder: threads.map((thread) => {
+            return thread.id;
+          }),
           threadsById,
         };
       });

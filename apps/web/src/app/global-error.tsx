@@ -1,10 +1,8 @@
 'use client';
-
 interface GlobalErrorProps {
   reset: () => void;
 }
-
-export default function GlobalError({ reset }: GlobalErrorProps) {
+export const GlobalError = ({ reset }: GlobalErrorProps) => {
   return (
     <html lang="zh-CN">
       <body>
@@ -20,4 +18,5 @@ export default function GlobalError({ reset }: GlobalErrorProps) {
       </body>
     </html>
   );
-}
+};
+export default GlobalError;

@@ -12,7 +12,7 @@ import { createBaseConfig } from './base.mjs';
  * @param {{ project?: string[]; tsconfigRootDir: string }} options 配置参数
  * @returns {import('typescript-eslint').ConfigWithExtends[]}
  */
-export function createNextConfig(options) {
+export const createNextConfig = (options) => {
   const { project = ['./tsconfig.json'], tsconfigRootDir } = options;
 
   return typescriptEslint.config(
@@ -46,7 +46,17 @@ export function createNextConfig(options) {
       },
       rules: {
         ...reactHooks.configs.recommended.rules,
+        'arrow-body-style': ['error', 'always'],
+        'func-style': ['error', 'expression'],
         'no-console': ['warn', { allow: ['warn', 'error', 'info'] }],
+        'no-restricted-syntax': [
+          'error',
+          {
+            message: 'Object methods must use arrow-function properties.',
+            selector: 'Property[method=true]',
+          },
+        ],
+        'prefer-arrow-callback': 'error',
         'react-hooks/exhaustive-deps': 'off',
         'react-refresh/only-export-components': 'off',
         'react/jsx-boolean-value': ['error', 'never'],
@@ -68,4 +78,4 @@ export function createNextConfig(options) {
       },
     },
   );
-}
+};

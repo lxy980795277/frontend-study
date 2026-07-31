@@ -9,7 +9,7 @@ import typescriptEslint from 'typescript-eslint';
  * @param {{ project?: string[]; tsconfigRootDir: string }} options 配置参数
  * @returns {import('typescript-eslint').ConfigWithExtends[]}
  */
-export function createBaseConfig(options) {
+export const createBaseConfig = (options) => {
   const { project = ['./tsconfig.json'], tsconfigRootDir } = options;
 
   return typescriptEslint.config(
@@ -71,4 +71,4 @@ export function createBaseConfig(options) {
     },
     prettier,
   );
-}
+};
