@@ -46,14 +46,14 @@
   "devDependencies": {
     "@commitlint/cli": "^21.2.1",
     "@commitlint/config-conventional": "^21.2.0",
-    "@types/node": "^24.10.0",
-    "eslint": "^9.39.5",
+    "@types/node": "^26.1.2",
+    "eslint": "^10.8.0",
     "husky": "^9.1.7",
     "knip": "^6.29.0",
-    "lint-staged": "^17.1.1",
+    "lint-staged": "^17.2.0",
     "prettier": "^3.9.6",
     "prettier-plugin-tailwindcss": "^0.8.1",
-    "turbo": "^2.10.6",
-    "typescript": "~6.0.3"
+    "turbo": "^2.10.7",
+    "typescript": "~7.0.2"
   }
 }
