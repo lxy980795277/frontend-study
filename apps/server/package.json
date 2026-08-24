@@ -43,15 +43,15 @@
     "@frontend-study/typescript-config": "workspace:*",
     "@nestjs/cli": "^11.0.24",
     "@nestjs/schematics": "^11.1.0",
-    "@nestjs/testing": "^11.1.28",
+    "@nestjs/testing": "^11.2.1",
     "@types/express": "^5.0.6",
-    "@types/node": "^24.13.3",
+    "@types/node": "^26.2.0",
     "@types/supertest": "^7.2.1",
-    "@vitest/coverage-v8": "^4.1.10",
-    "eslint": "^9.39.5",
+    "@vitest/coverage-v8": "^4.1.11",
+    "eslint": "^10.9.0",
     "prisma": "7.9.1",
     "supertest": "^7.2.2",
-    "typescript": "~6.0.3",
-    "vitest": "^4.1.10"
+    "typescript": "~7.0.2",
+    "vitest": "^4.1.11"
   }
 }

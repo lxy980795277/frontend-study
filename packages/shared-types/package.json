@@ -23,10 +23,10 @@
   "devDependencies": {
     "@frontend-study/eslint-config": "workspace:*",
     "@frontend-study/typescript-config": "workspace:*",
-    "@vitest/coverage-v8": "^4.1.10",
-    "eslint": "^9.39.5",
-    "typescript": "~6.0.3",
-    "vitest": "^4.1.10"
+    "@vitest/coverage-v8": "^4.1.11",
+    "eslint": "^10.9.0",
+    "typescript": "~7.0.2",
+    "vitest": "^4.1.11"
   },
   "dependencies": {
     "@ag-ui/core": "0.0.57"
